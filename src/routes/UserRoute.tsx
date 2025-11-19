@@ -1,22 +1,15 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import VungMienLayout from '../app/home/layout';
+import VungMienPage from '../app/home/page';
 
 const UserRoute = () => {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Redirect to vungmien page for authenticated users
-    router.push('/vungmien');
-  }, [router]);
-
   return (
-    <Suspense fallback={<div>Loading user dashboard...</div>}>
-      <div>
-        <h1>Redirecting to dashboard...</h1>
-      </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <VungMienLayout>
+        <VungMienPage />
+      </VungMienLayout>
     </Suspense>
   );
 };

@@ -1,0 +1,33 @@
+"use client";
+
+import React from 'react';
+import { AuthGuard } from '../../components/AuthGuard';
+import dynamic from 'next/dynamic';
+import { Roboto } from 'next/font/google'
+
+const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
+
+// Dynamically import TravelPlanner to avoid compilation during auth checks
+const TravelPlanner = dynamic(() => import('../../components/TravelPlanner'), {
+  loading: () => (
+    <div className="flex h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+    </div>
+  ),
+  ssr: false
+})
+
+export default function VungMienLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <AuthGuard requireAuth={true}>
+      <div className={roboto.className}>
+        <TravelPlanner />
+        {children}
+      </div>
+    </AuthGuard>
+  )
+}

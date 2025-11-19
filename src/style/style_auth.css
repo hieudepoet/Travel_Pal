@@ -34,7 +34,6 @@
           color: var(--font-color);
           font-weight: 600;
           background-image: url("/images/background_form_title.svg");
-          background-size: contain;
           background-position: center;
           background-repeat: no-repeat;
           padding: 5px 15px;
@@ -99,7 +98,6 @@
         .toggle:checked ~ .card-side::after {
           text-decoration: underline;
           background-image: url("/images/background_form_title.svg");
-          background-size: contain;
           background-position: center;
           background-repeat: no-repeat;
           padding: 5px 15px;
@@ -168,7 +166,6 @@
           border: 2px solid #000000;
           background-color: var(--bg-color);
           font-size: 15px;
-          font-weight: 600;
           color: var(--font-color);
           padding: 5px 10px;
           outline: none;

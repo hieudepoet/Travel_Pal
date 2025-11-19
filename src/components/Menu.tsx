@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Menu as MenuIcon, User2, LogOut } from "lucide-react";
+import React, { useState } from 'react';
+import { MenuIcon, User2, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { auth } from '../../firebase/clientApp';
 
 const tabItems = [
   { label: "Vùng miền", value: "region" },
@@ -11,6 +13,18 @@ const tabItems = [
 
 const Menu = () => {
   const [activeTab, setActiveTab] = useState(tabItems[0].value);
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      router.push('/');
+    }
+  };
 
   return (
     <div
@@ -18,21 +32,39 @@ const Menu = () => {
       style={{ right: '20px', top: '20px', gap: '5px' }}
     >
       {/* Radar icon button */}
-      <button
-        type="button"
-        className="flex self-start h-12 w-12 items-center justify-center rounded-full shadow-sm transition hover:shadow-md"
-        style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', border: 'none' }}
-        aria-label="Chọn vị trí mặc định"
-      >
-        <img
-          src="/images/my_location.svg"
-          alt="Định vị"
-          className="h-8 w-8"
-        />
-      </button>
+      {!isMenuCollapsed && (
+        <button
+          type="button"
+          className="flex self-start h-12 w-12 items-center justify-center rounded-full shadow-sm transition hover:shadow-md"
+          style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.7)', 
+            border: 'none',
+            animation: 'slideInLeft 0.3s ease-out',
+          }}
+          aria-label="Chọn vị trí mặc định"
+        >
+          <img
+            src="/images/my_location.svg"
+            alt="Định vị"
+            className="h-8 w-8"
+          />
+        </button>
+      )}
 
       {/* Tab navigation */}
-      <div className="flex self-start rounded-full px-2 py-1" style={{ gap: '5px', backgroundColor: 'rgba(255, 255, 255, 0.7)',height: '48px',alignItems: 'center', justifyContent: 'center', padding: '0 10px'}}>
+      {!isMenuCollapsed && (
+        <div 
+          className="flex self-start rounded-full px-2 py-1" 
+          style={{ 
+            gap: '5px', 
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            height: '48px',
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: '0 10px',
+            animation: 'slideInLeft 0.3s ease-out',
+          }}
+        >
         {tabItems.map((tab) => {
           const isActive = activeTab === tab.value;
           return (
@@ -44,7 +76,7 @@ const Menu = () => {
                 isActive ? 'text-white shadow' : 'text-[#d0d0d0] hover:text-[#ff9c48]'
               }`}
               style={{
-                padding: '0 10px',
+                padding: '5px 10px',
                 border: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -62,6 +94,7 @@ const Menu = () => {
           );
         })}
       </div>
+      )}
 
       {/* Vertical icon stack */}
       <div className="flex flex-col" style={{ gap: '5px' }}>
@@ -70,25 +103,43 @@ const Menu = () => {
           className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
           style={{ width: '48px', height: '48px', border: 'none', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
           aria-label="Menu chính"
+          onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
         >
           <MenuIcon strokeWidth={2} />
         </button>
-        <button
-          type="button"
-          className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-          style={{ width: '48px', height: '48px', border: 'none', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
-          aria-label="Tài khoản"
-        >
-          <User2 strokeWidth={2} />
-        </button>
-        <button
-          type="button"
-          className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-          style={{ width: '48px', height: '48px', border: 'none', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
-          aria-label="Đăng xuất"
-        >
-          <LogOut strokeWidth={2} />
-        </button>
+        {!isMenuCollapsed && (
+          <>
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
+              style={{ 
+                width: '48px', 
+                height: '48px', 
+                border: 'none', 
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                animation: 'slideInDown 0.3s ease-out',
+              }}
+              aria-label="Tài khoản"
+            >
+              <User2 strokeWidth={2} />
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
+              style={{ 
+                width: '48px', 
+                height: '48px', 
+                border: 'none', 
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                animation: 'slideInDown 0.3s ease-out',
+              }}
+              aria-label="Đăng xuất"
+              onClick={handleLogout}
+            >
+              <LogOut strokeWidth={2} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,22 +1,23 @@
 'use client';
 
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-const AuthRoute = lazy(() => import('../routes/AuthRoute'));
-const UserRoute = lazy(() => import('../routes/UserRoute'));
-
-export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export default function RootPage() {
+  const router = useRouter();
 
   useEffect(() => {
-    // Check authentication status (you can implement actual auth logic here)
-    const token = localStorage.getItem('auth_token');
-    setIsAuthenticated(!!token);
-  }, []);
+    // Default to auth page - useAuth hook will redirect to home if user is authenticated
+    router.push('/auth');
+  }, [router]);
 
+  // Show minimal loading state
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      {isAuthenticated ? <UserRoute /> : <AuthRoute />}
-    </Suspense>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-400 mx-auto mb-2"></div>
+        <p className="text-gray-600 text-xs">Loading...</p>
+      </div>
+    </div>
   );
 }

@@ -1,12 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
 
-const Button = () => {
+interface ButtonProps {
+  onClick?: () => void;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+const Button = ({ onClick, className, children }: ButtonProps) => {
   return (
     <StyledWrapper>
-      <div className="button">
+      <div className={`button ${className || ''}`} onClick={onClick}>
         <div className="button-wrapper">
-          <div className="text">Lập kế hoạch</div>
+          <div className="text">{children || 'Lập kế hoạch'}</div>
           <span className="icon">
             <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
           </span>

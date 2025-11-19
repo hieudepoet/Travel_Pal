@@ -1,32 +1,13 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import Calendar, { CalendarValue } from './Calendar';
+import Button from './Button';
+import Menu from './Menu';
+import PlanDisplay from './PlanDisplay';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
-import Button from '@/components/Button';
-import CalendarComponent, { type CalendarValue } from '@/components/Calendar';
-import Menu from '@/components/Menu';
-
-import { Calendar } from 'lucide-react';
-
-import { Roboto } from 'next/font/google'
-import { handleStartDateChange, handleEndDateChange } from '@/utils/dateValidation';
-
-const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
-
-export default function VungMienLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <div className={roboto.className}>
-      <TravelPlanner />
-      {children}
-    </div>
-  )
-}
-
-function TravelPlanner() {
+export default function TravelPlanner() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [description, setDescription] = useState('');
@@ -46,6 +27,24 @@ function TravelPlanner() {
 
   const syncCalendarWithInputs = (nextStart: string, nextEnd: string) => {
     setCalendarRange([toDateOrNull(nextStart), toDateOrNull(nextEnd)]);
+  };
+
+  const handleStartDateChange = (value: string, currentEndDate: string, setStart: (val: string) => void, setError: (val: string) => void) => {
+    setStart(value);
+    if (value && currentEndDate && new Date(value) > new Date(currentEndDate)) {
+      setError('Ngày bắt đầu không thể lớn hơn ngày kết thúc');
+    } else {
+      setError('');
+    }
+  };
+
+  const handleEndDateChange = (value: string, currentStartDate: string, setEnd: (val: string) => void, setError: (val: string) => void) => {
+    setEnd(value);
+    if (value && currentStartDate && new Date(value) < new Date(currentStartDate)) {
+      setError('Ngày kết thúc không thể nhỏ hơn ngày bắt đầu');
+    } else {
+      setError('');
+    }
   };
 
   const onStartDateChange = (value: string) => {
@@ -73,7 +72,7 @@ function TravelPlanner() {
   };
 
   const toggleCalendar = () => {
-    setIsCalendarOpen((prev) => !prev);
+    setIsCalendarOpen((prev: boolean) => !prev);
   };
 
   useEffect(() => {
@@ -135,7 +134,7 @@ function TravelPlanner() {
               ref={startIconRef}
               style={{ right: '10px', border: 'none' }}
             >
-              <Calendar size={20} strokeWidth={2} />
+              <CalendarIcon size={20} strokeWidth={2} />
             </button>
           </div>
 
@@ -160,7 +159,7 @@ function TravelPlanner() {
               ref={endIconRef}
               style={{ right: '10px', border: 'none' }}
             >
-              <Calendar size={20} strokeWidth={2} />
+              <CalendarIcon size={20} strokeWidth={2} />
             </button>
           </div>
 
@@ -171,7 +170,7 @@ function TravelPlanner() {
                 className="absolute z-10 mt-2 rounded-2xl border border-[#F6D9C2] bg-white/95 p-3 shadow-xl"
                 style={{ borderRadius: '10px', right: '10px', left: 'auto' }}
               >
-                <CalendarComponent
+                <Calendar
                   type="range"
                   value={calendarRange}
                   onChange={handleCalendarSelection}
@@ -215,70 +214,25 @@ function TravelPlanner() {
           </div>
 
           {/* Submit Button */}
-          <div>
-            <Button />
+          <div className="mt-6">
+            <Button
+              onClick={() => {
+                console.log('Plan submitted:', { startDate, endDate, description });
+              }}
+              className="w-full"
+            >
+              Tạo kế hoạch
+            </Button>
           </div>
 
-          {/* Plan Display Area */}
-          <div className="p-4 flex-1 px-[10px]" style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: 'inset 0 0 10px rgba(0, 0, 0, 0.15)', borderRadius: '10px' }}>
-            <div className="py-[4px] px-[14px] mx-auto relative" style={{ background: '#FAF8F8', boxShadow: '0 2px 2px rgba(0, 0, 0, 0.15)', width: 'fit-content', borderBottomLeftRadius: '20px', borderBottomRightRadius: '20px' }}>
-              <svg
-                width="20"
-                height="30"
-                viewBox="0 0 20 60"
-                style={{ position: 'absolute', right: '-14px', top: 0, clipPath: 'inset(0 0 50% 0)' }}
-              >
-                <defs>
-                  <filter id="shadow-left" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="2" dy="2" stdDeviation="1" floodColor="rgba(0,0,0,0.15)" />
-                  </filter>
-                </defs>
-                <path
-                  d="M20 0 Q-15 30 20 60 L0 60 L0 0 Z"
-                  fill="#FAF8F8"
-                  filter="url(#shadow-left)"
-                />
-              </svg>
-              <svg
-                width="20"
-                height="30"
-                viewBox="0 0 20 60"
-                style={{ position: 'absolute', left: '-14px', top: 0, clipPath: 'inset(0 0 50% 0)' }}
-              >
-                <defs>
-                  <filter id="shadow-right" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="-2" dy="2" stdDeviation="1" floodColor="rgba(0,0,0,0.15)" />
-                  </filter>
-                </defs>
-                <path
-                  d="M0 0 Q35 30 0 60 L20 60 L20 0 Z"
-                  fill="#FAF8F8"
-                  filter="url(#shadow-right)"
-                />
-              </svg>
-              <h3 className="font-semibold text-sm mb-2 text-center" style={{
-                background: 'linear-gradient(to bottom right, #EB4335, #FABC12)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>Kế hoạch</h3>
-            </div>
-            
-            <div className="py-4">
-              
-            </div>
+          {/* Plan Display */}
+          <div className="mt-6 flex-1">
+            <PlanDisplay />
           </div>
-
         </div>
       </div>
-
-      {/* Main Content Area - 70% width */}
-      <div className="flex-1 bg-gray-50 p-8">
-        <div className="text-center text-gray-400 mt-20">
-          <h2 className="text-2xl font-semibold mb-4">Main Content Area</h2>
-          <p>This is where your main application content will appear</p>
-        </div>
-      </div>
+      {/* Menu Component */}
+      <Menu />
     </div>
-  );
+  )
 }

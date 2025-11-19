@@ -4,7 +4,6 @@ export interface LoginFormData {
 }
 
 export interface RegisterFormData {
-  name: string;
   email: string;
   password: string;
 }
@@ -14,7 +13,6 @@ export type AuthFormData = LoginFormData | RegisterFormData;
 export interface AuthUser {
   id: string;
   email: string;
-  name?: string;
 }
 
 export interface AuthResponse {
