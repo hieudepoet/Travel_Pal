@@ -6,12 +6,16 @@ import Button from './Button';
 import Menu from './Menu';
 import PlanDisplay from './PlanDisplay';
 import { Calendar as CalendarIcon } from 'lucide-react';
+import { generateTravelPlan } from '../api/travelPlannerApi';
 
 export default function TravelPlanner() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [description, setDescription] = useState('');
   const [dateError, setDateError] = useState('');
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [calendarRange, setCalendarRange] = useState<[Date | null, Date | null]>([
     null,
     null,
@@ -121,7 +125,7 @@ export default function TravelPlanner() {
             <input
               type="date"
               value={startDate}
-              placeholder="DD/MM/YYYY"
+              placeholder="ngày/tháng/năm"
               onChange={(e) => onStartDateChange(e.target.value)}
               className="w-full px-3 py-2 p-[8px] pr-12 border-2 border-gray-200 rounded-[20px] focus:outline-none focus:border-orange-400 transition-colors text-[16px] text-center"
               style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}
@@ -146,7 +150,7 @@ export default function TravelPlanner() {
             <input
               type="date"
               value={endDate}
-              placeholder="DD/MM/YYYY"
+              placeholder=" ngày/tháng/năm"
               onChange={(e) => onEndDateChange(e.target.value)}
               className="w-full px-3 py-2 p-[8px] pr-12 border-2 border-gray-200 rounded-[20px] focus:outline-none focus:border-orange-400 transition-colors text-[16px] text-center"
               style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}
@@ -216,19 +220,41 @@ export default function TravelPlanner() {
           {/* Submit Button */}
           <div className="mt-6">
             <Button
-              onClick={() => {
-                console.log('Plan submitted:', { startDate, endDate, description });
+              onClick={async () => {
+                try {
+                  setIsLoading(true);
+                  setError(null);
+                  
+                  const plan = await generateTravelPlan({
+                    startDate,
+                    endDate,
+                    description
+                  });
+                  
+                  setAiResponse(plan);
+                } catch (err) {
+                  console.error(err);
+                } finally {
+                  setIsLoading(false);
+                }
               }}
               className="w-full"
+              disabled={isLoading}
             >
-              Tạo kế hoạch
+              {isLoading ? '...' : 'Tạo kế hoạch'}
             </Button>
           </div>
 
           {/* Plan Display */}
-          <div className="mt-6 flex-1">
-            <PlanDisplay />
-          </div>
+          {(aiResponse || isLoading) && (
+            <div className="mt-6 flex-1">
+              <PlanDisplay 
+                plan={aiResponse}
+                isLoading={isLoading}
+                error={error}
+              />
+            </div>
+          )}
         </div>
       </div>
       {/* Menu Component */}

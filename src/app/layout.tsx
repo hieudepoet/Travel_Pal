@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ToastContainer
         position="top-center"
-        autoClose={2000}
+        autoClose={1000}
         limit={3}
         hideProgressBar={false}
         newestOnTop={false}
@@ -31,7 +31,7 @@ export default function RootLayout({
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="colored"
+        theme="light"
         transition={Bounce}
         style={{ zIndex: 9999 }}
       />

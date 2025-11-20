@@ -5,12 +5,16 @@ interface ButtonProps {
   onClick?: () => void;
   className?: string;
   children?: React.ReactNode;
+  disabled?: boolean;
 }
 
-const Button = ({ onClick, className, children }: ButtonProps) => {
+const Button = ({ onClick, className, children, disabled = false }: ButtonProps) => {
   return (
     <StyledWrapper>
-      <div className={`button ${className || ''}`} onClick={onClick}>
+      <div 
+        className={`button ${className || ''} ${disabled ? 'disabled' : ''}`} 
+        onClick={!disabled ? onClick : undefined}
+      >
         <div className="button-wrapper">
           <div className="text">{children || 'Lập kế hoạch'}</div>
           <span className="icon">
@@ -138,6 +142,12 @@ const StyledWrapper = styled.div`
 
   .button:hover:before {
     bottom: calc(var(--height) + var(--gap-between-tooltip-to-button));
+  }
+
+  .button.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
   }`;
 
 export default Button;

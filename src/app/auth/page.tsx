@@ -168,6 +168,30 @@ export default function AuthPage() {
               <span className="card-side"></span>
               <div className="flip-card__inner">
                 <div className="flip-card__front">
+                  <div style={{ position: 'relative'}}>
+                    <img 
+                      src="/images/man_with_flag.png" 
+                      alt="Man with flag" 
+                      style={{
+                        position: 'absolute',
+                        right: '-230px',
+                        top: '-50px',
+                        width: '250px',
+                        zIndex: 1
+                      }} 
+                    />
+                    <img 
+                      src="/images/woman.png" 
+                      alt="Woman" 
+                      style={{
+                        position: 'absolute',
+                        left: '-102px',
+                        top: '-50px',
+                        width: '120px',
+                        zIndex: 1
+                      }} 
+                    />
+                  </div>
                   <div className="title">Đăng nhập</div>
                   <form className="flip-card__form" onSubmit={handleSubmit}>
                     <input

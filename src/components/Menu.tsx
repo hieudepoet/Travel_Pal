@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
 
 const tabItems = [
-  { label: "Vùng miền", value: "region" },
+  { label: "Khu vực", value: "region" },
   { label: "Các thành phố", value: "cities" },
   { label: "Địa điểm", value: "places" },
 ];
