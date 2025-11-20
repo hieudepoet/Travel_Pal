@@ -35,7 +35,7 @@ export default function RootLayout({
         transition={Bounce}
         style={{ zIndex: 9999 }}
       />
-        {children}
+      {children}
       </body>
     </html>
   );

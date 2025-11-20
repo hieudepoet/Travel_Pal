@@ -1,7 +1,22 @@
-import React from 'react';
+'use client';
 
-const VungMienPage = () => {
-  return <></>;
+import dynamic from 'next/dynamic';
+import React from 'react';
+import Menu from '@/components/Menu';
+
+// Dynamically import client components with SSR disabled
+const LocationDisplay = dynamic(() => import('@/components/LocationDisplay'), { 
+  ssr: false 
+});
+
+const HomePage = () => {
+  return (
+    <div className="flex-1 h-full overflow-auto">
+      <LocationDisplay />
+      {/* Menu Component */}
+      <Menu />
+    </div>
+  );
 };
 
-export default VungMienPage;
+export default HomePage;

@@ -12,6 +12,7 @@
     "@mantine/core": "^7.13.2",
     "@mantine/dates": "^7.17.8",
     "@mantine/hooks": "^7.13.2",
+    "cloudinary": "^2.8.0",
     "dayjs": "^1.11.13",
     "firebase": "^12.6.0",
     "lucide-react": "^0.554.0",

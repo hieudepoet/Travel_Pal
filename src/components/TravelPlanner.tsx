@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Calendar, { CalendarValue } from './Calendar';
 import Button from './Button';
-import Menu from './Menu';
 import PlanDisplay from './PlanDisplay';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { generateTravelPlan } from '../api/travelPlannerApi';
@@ -101,9 +100,9 @@ export default function TravelPlanner() {
   }, [isCalendarOpen]);
 
   return (
-    <div className="flex h-screen relative">
-      {/* Left Sidebar - 30% width */}
-      <div className="w-[30%] overflow-y-auto h-[100vh]">
+    <div className="h-full relative">
+      {/* Left Sidebar */}
+      <div className="h-full overflow-y-auto">
         {/* Logo */}
         <div className="flex justify-center mb-6 rounded-lg p-4 pt-[10px] w-full h-auto" style={{ background: 'white' }}>
           <img 
@@ -257,8 +256,7 @@ export default function TravelPlanner() {
           )}
         </div>
       </div>
-      {/* Menu Component */}
-      <Menu />
+      
     </div>
   )
 }

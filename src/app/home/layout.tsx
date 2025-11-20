@@ -17,16 +17,20 @@ const TravelPlanner = dynamic(() => import('../../components/TravelPlanner'), {
   ssr: false
 })
 
-export default function VungMienLayout({
+export default function HomeLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
     <AuthGuard requireAuth={true}>
-      <div className={roboto.className}>
-        <TravelPlanner />
-        {children}
+      <div className={`${roboto.className} flex h-screen`}>
+        <div className="w-[30%] h-full overflow-auto">
+          <TravelPlanner />
+        </div>
+        <main className="w-[70%] h-full overflow-auto">
+          {children}
+        </main>
       </div>
     </AuthGuard>
   )
