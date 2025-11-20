@@ -3,6 +3,7 @@
 import React from 'react';
 import { AuthGuard } from '../../components/AuthGuard';
 import dynamic from 'next/dynamic';
+import Loading from '../../components/Loading';
 import { Roboto } from 'next/font/google'
 
 const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
@@ -11,7 +12,7 @@ const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
 const TravelPlanner = dynamic(() => import('../../components/TravelPlanner'), {
   loading: () => (
     <div className="flex h-screen items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+      <Loading />
     </div>
   ),
   ssr: false
