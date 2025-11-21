@@ -210,7 +210,7 @@ export default function TravelPlanner() {
         </div>
 
         <div
-          className="w-full h-full py-[20px] px-[25px] flex flex-col gap-[10px]"
+          className="w-full py-[20px] px-[25px] flex flex-col gap-[10px]"
           style={{ background: '#FAF8F8', boxShadow: 'inset 0 0 15px rgba(0, 0, 0, 0.1)' }}
         >
           {/* Start Date Input */}
@@ -326,7 +326,7 @@ export default function TravelPlanner() {
           </div>
 
           {/* Plan Display */}
-          <div className="w-full mt-6 flex-1">
+          <div className="w-full mt-6 flex-1" style={{ minHeight: '100%' }}>
             <PlanDisplay
               tripPlan={tripPlan}
               isLoading={isLoading}

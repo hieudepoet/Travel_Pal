@@ -5,7 +5,8 @@ import { toast } from 'react-toastify';
 import { Dashboard } from './Dashboard';
 import { EventCard } from './EventCard';
 import { TripPlan } from '../types/types';
-import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, Heart, Loader2 } from 'lucide-react';
+import Loading from './Loading';
 
 interface PlanDisplayProps {
     tripPlan: TripPlan | null;
@@ -39,7 +40,7 @@ export default function PlanDisplay({
     ) || 0;
 
     return (
-        <div className="w-full h-full p-[10px]" style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: "20px" }}>
+        <div className="w-full p-[10px]" style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: "20px" }}>
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 animate-pulse">
                     <AlertCircle className="w-5 h-5" />
@@ -50,8 +51,10 @@ export default function PlanDisplay({
             {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                     <div className="flex flex-col items-center gap-3">
-                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                        <span className="text-gray-600 font-medium">Generating your perfect trip...</span>
+                        <Loading />
+                        <span className="text-gray-600 font-medium flex items-center gap-[4px]">
+                            Đang suy nghĩ, hãy đợi chút nhé <Heart className="w-[20px] h-[20px] animate-pulse" fill="currentColor" style={{ color: '#FDA4A4' }} />
+                        </span>
                     </div>
                 </div>
             ) : !tripPlan ? (
@@ -61,7 +64,7 @@ export default function PlanDisplay({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <p className="text-gray-500 text-lg">Enter your preferences to start planning</p>
+                    <p className="text-gray-500 text-lg">Hãy điền các yêu cầu trên để bắt đầu</p>
                 </div>
             ) : (
                 <div className="w-full animate-fade-in">
@@ -95,7 +98,7 @@ export default function PlanDisplay({
                                     <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: '#FDB88F', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold' }}>
                                         Ngày {day.day}
                                     </div>
-                                    <h3 className="px-[8px] py-[2px] text-[16px]" style={{background: 'white', borderRadius: '5px', color: 'black', fontWeight: 'semibold', border: '1px solid #C4C4C4'}}>
+                                    <h3 className="px-[8px] py-[2px] text-[16px]" style={{ background: 'white', borderRadius: '5px', color: 'black', fontWeight: 'semibold', border: '1px solid #C4C4C4' }}>
                                         {day.date}
                                     </h3>
                                 </div>
