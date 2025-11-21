@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { LogOut, Menu as MenuIcon, User2 } from 'lucide-react';
+import { MenuIcon, User2, LogOut, Bot } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
 import Loading from './Loading';
@@ -126,6 +126,21 @@ const Menu = () => {
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
                 animation: 'slideInDown 0.3s ease-out',
                 cursor: 'pointer',
+              }}
+              aria-label="AI Travel Planner"
+              onClick={() => router.push('/planner')}
+            >
+              <Bot strokeWidth={2} />
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
+              style={{ 
+                width: '48px', 
+                height: '48px', 
+                border: 'none', 
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                animation: 'slideInDown 0.3s ease-out',
               }}
               aria-label="Tài khoản"
             >

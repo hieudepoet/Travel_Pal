@@ -18,6 +18,7 @@ const clientCredentials = {
 };
 
 // Initialize Firebase
+console.log("Debug: ", clientCredentials);
 const app = !getApps().length ? initializeApp(clientCredentials) : getApps()[0];
 
 // Export Firebase services
