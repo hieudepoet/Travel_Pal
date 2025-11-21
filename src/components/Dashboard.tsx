@@ -1,17 +1,17 @@
+'use client';
+
 import React from 'react';
 import { TripStats } from '../types/types';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { CloudSun, DollarSign, MapPin, CalendarClock } from 'lucide-react';
 
 interface DashboardProps {
   stats: TripStats;
-  summary: string;
   tips: string;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-export const Dashboard: React.FC<DashboardProps> = ({ stats, summary, tips }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
   // Mock data for the chart based on stats (simplification for viz)
   const chartData = [
     { name: 'Activities', value: stats.totalCost * 0.4 },
@@ -21,94 +21,66 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, summary, tips }) =>
   ];
 
   return (
-    // Added !bg-white and border styling
-    <div className="!bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-      <h2 className="text-2xl font-bold !text-gray-800 mb-6">Trip Overview</h2>
-      
-      {/* Summary Text */}
-      <div className="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-        <p className="text-gray-700 italic">&lqudo;{summary}&rqudo;</p>
-      </div>
+    // Applied styles from TravelPlanner
+    <div className="w-full h-full">
+      <h2 className="text-[18px] font-bold !text-gray-800 mb-6">Tổng quan</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard 
-          icon={<DollarSign className="w-6 h-6 text-green-600" />}
-          label="Est. Cost"
+      <div className="grid grid-cols-2 gap-[8px] mb-8" >
+        <StatCard
+          icon={<DollarSign className="w-full h-full" style={{ color: "green" }} />}
+          label="Ước tính chi phí"
           value={`${stats.totalCost.toLocaleString()} ${stats.currency}`}
-          sub="Total estimate"
+          sub=""
+          backgroundColor="#E8F5E9" // Light Green
         />
-        <StatCard 
-          icon={<CalendarClock className="w-6 h-6 text-purple-600" />}
-          label="Duration"
+        <StatCard
+          icon={<CalendarClock className="w-full h-full" style={{ color: "purple" }} />}
+          label="Thời gian"
           value={`${stats.durationDays} Days`}
-          sub="Full trip"
+          sub=""
+          backgroundColor="#F3E5F5" // Light Purple
         />
-        <StatCard 
-          icon={<MapPin className="w-6 h-6 text-red-600" />}
-          label="Events"
+        <StatCard
+          icon={<MapPin className="w-full h-full" style={{ color: "red" }} />}
+          label="Số địa điểm"
           value={stats.totalEvents.toString()}
-          sub="Places to visit"
+          sub=""
+          backgroundColor="#FFEBEE" // Light Red
         />
-        <StatCard 
-          icon={<CloudSun className="w-6 h-6 text-orange-500" />}
-          label="Weather"
-          value="Forecast"
-          sub={stats.weatherSummary}
+        <StatCard
+          icon={<CloudSun className="w-full h-full" style={{ color: "orange" }} />}
+          label="Thời tiết"
+          value={stats.weatherSummary}
+          sub=""
+          backgroundColor="#FFF3E0" // Light Orange
         />
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 h-64">
-            <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">Budget Breakdown</h3>
-            <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-                <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                fill="#8884d8"
-                paddingAngle={5}
-                dataKey="value"
-                >
-                {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => `${Math.round(value)} ${stats.currency}`} />
-                <Legend verticalAlign="bottom" height={36}/>
-            </PieChart>
-            </ResponsiveContainer>
-        </div>
-
-        <div className="lg:col-span-2">
-            <h3 className="text-sm font-semibold text-gray-500 mb-4 uppercase tracking-wider">Travel Agent Tips</h3>
-            <div className="bg-yellow-50 p-5 rounded-lg border border-yellow-100">
-                <ul className="space-y-2">
-                    {tips.split('. ').map((tip, idx) => (
-                         tip && <li key={idx} className="flex items-start gap-2 text-gray-700 text-sm">
-                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-yellow-500 mt-2 flex-shrink-0"></span>
-                            {tip}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+      <div className="">
+        <h3 className="text-[18px] font-semibold text-gray-500 mb-4 tracking-wider">Gợi ý</h3>
+        <div className="p-[5px]" style={{ backgroundColor: "#DBEAFE", borderRadius: "10px" }}>
+          <ul className="" style={{ margin: "8px", padding: "0" }}>
+            {tips.split('. ').map((tip, idx) => (
+              tip && <li key={idx} className="flex items-start gap-[8px] text-sm mb-[8px]" style={{color: "gray"}}>
+                <span className="inline-block w-[10px] h-[10px] mt-[5px] mr-[5px] flex-shrink-0" style={{ backgroundColor: "#0088FE", borderRadius: "50%" }}></span>
+                {tip}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>
   );
 };
 
-const StatCard = ({ icon, label, value, sub }: { icon: React.ReactNode, label: string, value: string, sub: string }) => (
-  <div className="bg-gray-50 p-4 rounded-lg flex items-center gap-4">
-    <div className="p-3 bg-white rounded-full shadow-sm">
+const StatCard = ({ icon, label, value, sub, backgroundColor }: { icon: React.ReactNode, label: string, value: string, sub: string, backgroundColor?: string }) => (
+  <div className="p-[10px] flex items-center gap-[10px]" style={{ backgroundColor: backgroundColor || '#F9FAFB', borderRadius: "20px" }}>
+    <div className="p-[5px] w-[30px] h-[30px] flex items-center justify-center" style={{ backgroundColor: "white", borderRadius: "50%", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)" }}>
       {icon}
     </div>
-    <div>
-      <p className="text-xs text-gray-500 font-medium uppercase">{label}</p>
-      <p className="text-lg font-bold !text-gray-900 truncate max-w-[120px]" title={value}>{value}</p>
-      <p className="text-xs text-gray-400 truncate max-w-[120px]" title={sub}>{sub}</p>
+    <div className="flex flex-col gap-[4px]">
+      <p className="text-[12px] font-medium uppercase" style={{ color: "gray", margin: "0" }}>{label}</p>
+      <p className="text-[16px] truncate max-w-[120px]" style={{ color: "black", fontWeight: "bold", margin: "0" }} title={value}>{value}</p>
+      <p className="text-[12px] truncate max-w-[120px]" style={{ color: "gray", margin: "0" }} title={sub}>{sub}</p>
     </div>
   </div>
 );

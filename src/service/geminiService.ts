@@ -3,7 +3,7 @@ import { GoogleGenAI, Type, Schema, Chat, FunctionDeclaration } from "@google/ge
 import { UserPreferences, TripPlan, TravelStyle } from "../types/types";
 
 // Use NEXT_PUBLIC_ prefix for Client Component visibility in Next.js
-const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_AGENT_API_KEY });
 const MODEL_NAME = "gemini-2.5-flash";
 
 // --- Schema Definitions ---

@@ -1,20 +1,108 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import Calendar, { CalendarValue } from './Calendar';
 import Button from './Button';
 import PlanDisplay from './PlanDisplay';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { generateTravelPlan } from '../api/travelPlannerApi';
+import { generateTrip, updateTrip } from '../service/geminiService';
+import { UserPreferences, TripPlan } from '../types/types';
 
 export default function TravelPlanner() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [description, setDescription] = useState('');
   const [dateError, setDateError] = useState('');
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
+
+  const handleGeneratePlan = async () => {
+    if (!startDate || !endDate) {
+      setError('Vui lòng chọn ngày bắt đầu và ngày kết thúc');
+      return;
+    }
+
+    if (!description.trim()) {
+      setError('Vui lòng nhập mô tả chuyến đi');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      setTripPlan(null);
+
+      const userPreferences: UserPreferences = {
+        destination: 'Vietnam', // Defaulting to Vietnam as per context, or could be dynamic
+        startDate,
+        endDate,
+        style: [],
+        prompt: description,
+        budget: 'moderate',
+      };
+
+      const plan = await generateTrip(userPreferences);
+      setTripPlan(plan);
+    } catch (err) {
+      console.error('Error generating trip plan:', err);
+      setError('Có lỗi xảy ra khi tạo kế hoạch. Vui lòng thử lại.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRejectEvent = useCallback((eventId: string) => {
+    setTripPlan(prev => {
+      if (!prev) return null;
+      const newItinerary = prev.itinerary.map(day => ({
+        ...day,
+        events: day.events.map(evt =>
+          evt.id === eventId ? { ...evt, status: 'rejected' as const } : evt
+        )
+      }));
+      return { ...prev, itinerary: newItinerary };
+    });
+  }, []);
+
+  const handleRestoreEvent = useCallback((eventId: string) => {
+    setTripPlan(prev => {
+      if (!prev) return null;
+      const newItinerary = prev.itinerary.map(day => ({
+        ...day,
+        events: day.events.map(evt =>
+          evt.id === eventId ? { ...evt, status: 'accepted' as const } : evt
+        )
+      }));
+      return { ...prev, itinerary: newItinerary };
+    });
+  }, []);
+
+  const handleRegenerateRejected = async () => {
+    if (!tripPlan) return;
+
+    const rejectedIds: string[] = [];
+    tripPlan.itinerary.forEach(day => {
+      day.events.forEach(evt => {
+        if (evt.status === 'rejected') rejectedIds.push(evt.id);
+      });
+    });
+
+    if (rejectedIds.length === 0) return;
+
+    setRegenerating(true);
+    try {
+      const updatedPlan = await updateTrip(tripPlan, rejectedIds);
+      setTripPlan(updatedPlan);
+    } catch (err) {
+      setError("Failed to update itinerary. Please try again.");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   const [calendarRange, setCalendarRange] = useState<[Date | null, Date | null]>([
     null,
     null,
@@ -105,11 +193,15 @@ export default function TravelPlanner() {
       <div className="h-full overflow-y-auto">
         {/* Logo */}
         <div className="flex justify-center mb-6 rounded-lg p-4 pt-[10px] w-full h-auto" style={{ background: 'white' }}>
-          <img 
-            src="/images/logo.png" 
-            alt="LOGO" 
-            className="w-[170px] h-[80px] object-contain"
-          />
+          <div className="relative w-[170px] h-[80px]">
+            <Image
+              src="/images/logo.png"
+              alt="LOGO"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
 
         <div
@@ -193,24 +285,25 @@ export default function TravelPlanner() {
               className="w-full px-3 py-2 p-[10px] rounded-lg focus:outline-none focus:border-orange-400 transition-colors resize-none text-sm  text-[16px]" style={{ border: 'none', background: '#FAF8F8' }}
             />
             <div className="flex justify-end items-center mt-2 gap-2 absolute bottom-[10px] right-[10px] transition-all duration-200" onMouseEnter={(e) => {
-                const span = e.currentTarget.querySelector('#suggestion');
-                if (span) {
-                  (span as HTMLSpanElement).style.color = 'black';
-                }
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }} onMouseLeave={(e) => {
-                const span = e.currentTarget.querySelector('#suggestion');
-                if (span) {
-                  (span as HTMLSpanElement).style.color = '#AFAFAF';
-                }
-                e.currentTarget.style.transform = 'translateY(0px)';
-              }}>
+              const span = e.currentTarget.querySelector('#suggestion');
+              if (span) {
+                (span as HTMLSpanElement).style.color = 'black';
+              }
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }} onMouseLeave={(e) => {
+              const span = e.currentTarget.querySelector('#suggestion');
+              if (span) {
+                (span as HTMLSpanElement).style.color = '#AFAFAF';
+              }
+              e.currentTarget.style.transform = 'translateY(0px)';
+            }}>
               <span id="suggestion" className="text-xs mr-[10px] cursor-pointer" style={{ color: '#AFAFAF' }}>Gợi ý</span>
               <div className="p-[4px] bg-white rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors" style={{ border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}>
-                <img 
-                  src="/images/gemini_logo.svg" 
-                  alt="Gemini" 
-                  className="w-[18px] h-[18px]"
+                <Image
+                  src="/images/gemini_logo.svg"
+                  alt="Gemini"
+                  width={18}
+                  height={18}
                 />
               </div>
             </div>
@@ -219,44 +312,29 @@ export default function TravelPlanner() {
           {/* Submit Button */}
           <div className="mt-6">
             <Button
-              onClick={async () => {
-                try {
-                  setIsLoading(true);
-                  setError(null);
-                  
-                  const plan = await generateTravelPlan({
-                    startDate,
-                    endDate,
-                    description
-                  });
-                  
-                  setAiResponse(plan);
-                } catch (err) {
-                  console.error(err);
-                } finally {
-                  setIsLoading(false);
-                }
-              }}
               className="w-full"
               disabled={isLoading}
+              onClick={handleGeneratePlan}
             >
               {isLoading ? '...' : 'Tạo kế hoạch'}
             </Button>
           </div>
 
           {/* Plan Display */}
-          {(aiResponse || isLoading) && (
-            <div className="mt-6 flex-1">
-              <PlanDisplay 
-                plan={aiResponse}
-                isLoading={isLoading}
-                error={error}
-              />
-            </div>
-          )}
+          <div className="w-full mt-6 flex-1">
+            <PlanDisplay
+              tripPlan={tripPlan}
+              isLoading={isLoading}
+              error={error}
+              onReject={handleRejectEvent}
+              onRestore={handleRestoreEvent}
+              onRegenerate={handleRegenerateRejected}
+              isRegenerating={regenerating}
+            />
+          </div>
         </div>
       </div>
-      
+
     </div>
   )
 }
