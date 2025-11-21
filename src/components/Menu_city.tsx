@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MenuIcon, User2, LogOut, Bot } from 'lucide-react';
+import { LogOut, Menu as MenuIcon, User2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
 import Loading from './Loading';
@@ -13,7 +13,7 @@ const tabItems = [
 ];
 
 const Menu = () => {
-  const [activeTab, setActiveTab] = useState(tabItems[0].value);
+  const [activeTab, setActiveTab] = useState(tabItems[1].value);
   const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
@@ -78,9 +78,7 @@ const Menu = () => {
               key={tab.value}
               type="button"
               onClick={() => setActiveTab(tab.value)}
-              className={`rounded-full px-4 py-2 text-[18px] transition ${
-                isActive ? 'text-white shadow' : 'text-[#d0d0d0] hover:text-[#ff9c48]'
-              }`}
+              className={`rounded-full px-4 py-2 text-[18px] transition ${isActive ? 'shadow' : ''}`}
               style={{
                 padding: '5px 10px',
                 border: 'none',
@@ -93,8 +91,13 @@ const Menu = () => {
                 background: isActive
                   ? 'linear-gradient(135deg, rgba(255,81,47,0.85) 0%, rgba(240,152,25,0.85) 100%)'
                   : 'none',
-                color: '#ffffff',
-              }}
+                color: isActive 
+                  ? (tab.value === 'region' ? '#000000' : '#ffffff')
+                  : (tab.value === 'region' ? '#000000' : '#d0d0d0'),
+                ':hover': {
+                  color: tab.value === 'region' ? '#000000' : (isActive ? '#ffffff' : '#ff9c48')
+                }
+              } as React.CSSProperties}
             >
               {tab.label}
             </button>
@@ -126,21 +129,6 @@ const Menu = () => {
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
                 animation: 'slideInDown 0.3s ease-out',
                 cursor: 'pointer',
-              }}
-              aria-label="AI Travel Planner"
-              onClick={() => router.push('/planner')}
-            >
-              <Bot strokeWidth={2} />
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-              style={{ 
-                width: '48px', 
-                height: '48px', 
-                border: 'none', 
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                animation: 'slideInDown 0.3s ease-out',
               }}
               aria-label="Tài khoản"
             >

@@ -12,7 +12,7 @@ const LocationDisplay = dynamic(() => import('@/components/LocationDisplay'), {
 const HomePage = () => {
   return (
     <div className="flex-1 h-full overflow-auto">
-      <LocationDisplay />
+      <LocationDisplay folder="home"/>
       {/* Menu Component */}
       <Menu />
     </div>
