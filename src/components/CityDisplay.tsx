@@ -23,95 +23,108 @@ export default function LocationDisplay({ folder = 'mientrung_city' }: LocationD
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchCities = async () => {
-      setLoading(true);
+  const fetchCities = async (cursor: string | null = null) => {
+    if (cursor === null && cities.length > 0) return; // Don't refetch initial load if we already have data
+    
+    try {
+      if (cursor === null) setLoading(true);
+      else setLoadingMore(true);
+      
       setError(null);
+      
+      const url = `/api/cloudinary?folder=${encodeURIComponent(folder)}&max_results=6${cursor ? `&next_cursor=${cursor}` : ''}`;
+      const response = await fetch(url);
+      const responseText = await response.text();
+      
+      let data;
       try {
-        const response = await fetch(`/api/cloudinary?folder=${encodeURIComponent(folder)}`);
-        const responseText = await response.text();
-        
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch (jsonError) {
-          console.error('Failed to parse JSON response:', responseText);
-          throw new Error('Invalid response from server');
-        }
-
-        if (!response.ok) {
-          throw new Error(data.error || data.message || 'Failed to fetch cities');
-        }
-
-        let resources = [];
-        if (Array.isArray(data)) {
-          resources = data;
-        } else if (data.resources && Array.isArray(data.resources)) {
-          resources = data.resources;
-        } else if (data.images && Array.isArray(data.images)) {
-          resources = data.images;
-        } else {
-          console.error('Unexpected API response format:', data);
-          throw new Error('Unexpected response format from server');
-        }
-
-        const formattedCities = resources.map((item: any) => {
-          const name = (item.publicId || item.public_id || '')
-            .split('/')
-            .pop()
-            ?.replace(/_/g, ' ');
-
-          return {
-            id: item.id || item.asset_id,
-            name: name || 'Unknown City',
-            image: item.url || item.secure_url,
-            publicId: item.publicId || item.public_id,
-            path: `/place/${name?.toLowerCase().replace(/\s+/g, '-')}`,
-            province: folder.includes('mientrung') ? 'Miền Trung' : ''
-          };
-        });
-
-        setCities(formattedCities);
-      } catch (err) {
-        const error = err as Error;
-        console.error('Error loading cities:', error);
-        setError(error.message || 'Không thể tải danh sách thành phố. Vui lòng thử lại sau.');
-      } finally {
-        setLoading(false);
+        data = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', responseText);
+        throw new Error('Invalid response from server');
       }
-    };
 
-    fetchCities();
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Failed to fetch cities');
+      }
+
+      let resources = [];
+      if (Array.isArray(data.resources)) {
+        resources = data.resources;
+      } else if (Array.isArray(data.images)) {
+        resources = data.images;
+      } else if (Array.isArray(data)) {
+        resources = data;
+      } else {
+        console.error('Unexpected API response format:', data);
+        throw new Error('Unexpected response format from server');
+      }
+
+      const formattedCities = resources.map((item: any) => {
+        const name = (item.publicId || item.public_id || '')
+          .split('/')
+          .pop()
+          ?.replace(/_/g, ' ');
+
+        return {
+          id: item.id || item.asset_id,
+          name: name || 'Unknown City',
+          image: item.url || item.secure_url,
+          publicId: item.publicId || item.public_id,
+          path: `/place/${name?.toLowerCase().replace(/\s+/g, '-')}`,
+          province: folder.includes('mientrung') ? 'Miền Trung' : ''
+        };
+      });
+
+      if (cursor) {
+        setCities(prevCities => [...prevCities, ...formattedCities]);
+      } else {
+        setCities(formattedCities);
+      }
+
+      // Update pagination state
+      setNextCursor(data.next_cursor || null);
+      setHasMore(!!data.next_cursor);
+    } catch (err) {
+      const error = err as Error;
+      console.error('Error loading cities:', error);
+      setError(error.message || 'Không thể tải danh sách thành phố. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchCities(null);
   }, [folder]);
 
+  // Handle scroll for infinite loading
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
-      if (loading || loadingMore || visibleCount >= cities.length) return;
+      if (loading || loadingMore || !hasMore) return;
 
       const { scrollTop, scrollHeight, clientHeight } = container;
+      // Trigger load more when user scrolls to 80% of the container
       if (scrollTop + clientHeight >= scrollHeight * 0.8) {
-        setLoadingMore(true);
-        setTimeout(() => {
-          setVisibleCount(prev => Math.min(prev + 6, cities.length));
-          setLoadingMore(false);
-        }, 500);
+        if (nextCursor) {
+          fetchCities(nextCursor);
+        }
       }
     };
 
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [cities.length, loading, loadingMore, visibleCount]);
-
-  useEffect(() => {
-    setVisibleCount(6);
-  }, [cities.length]);
+  }, [loading, loadingMore, hasMore, nextCursor]);
 
   const filteredCities = cities.filter(city => 
     city.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -167,7 +180,7 @@ export default function LocationDisplay({ folder = 'mientrung_city' }: LocationD
           boxShadow: "inset 0 0 10px rgba(0, 0, 0, 0.15)",
           maxHeight: 'calc(100vh - 200px)',
         }}>
-        {filteredCities.slice(0, visibleCount).map((city) => (
+        {filteredCities.map((city) => (
           <div 
             key={city.id} 
             className="group relative w-full h-[90px] rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-lg transition-all"

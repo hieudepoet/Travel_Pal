@@ -3,6 +3,30 @@
 import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
 
+// Helper function to format the plan text with proper line breaks and styling
+const formatPlanText = (text: string) => {
+  if (!text) return '';
+  
+  // Split by double newlines to handle paragraphs
+  return text
+    .split('\n\n')
+    .map((paragraph, i) => {
+      // Check if paragraph is a heading (starts with # or is followed by a colon)
+      if (paragraph.match(/^#+ /) || paragraph.endsWith(':')) {
+        return `<p class="font-semibold text-blue-600 mb-2">${paragraph}</p>`;
+      }
+      
+      // Check if paragraph is a list item
+      if (paragraph.match(/^\d+\./)) {
+        return `<p class="mb-1 pl-4 border-l-2 border-blue-200">${paragraph}</p>`;
+      }
+      
+      // Default paragraph
+      return `<p class="mb-3">${paragraph}</p>`;
+    })
+    .join('');
+};
+
 interface PlanDisplayProps {
   plan: string | null;
   isLoading: boolean;
@@ -63,13 +87,60 @@ export default function PlanDisplay({ plan, isLoading, error, startDate, endDate
               <span className="ml-3 text-gray-600">Đang tạo kế hoạch...</span>
             </div>
           ) : plan ? (
-            <h3 className="font-semibold text-sm mb-2 text-center" style={{
-              background: 'linear-gradient(to bottom right, #EB4335, #FABC12)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>Kế hoạch</h3>
-          ) : null}
+            <div className="mt-4">
+              <h3 className="font-semibold text-lg mb-4 text-center" style={{
+                background: 'linear-gradient(to bottom right, #EB4335, #FABC12)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>KẾ HOẠCH DU LỊCH</h3>
+              
+              <div className="bg-white rounded-lg p-4 shadow-md mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500">Ngày bắt đầu</p>
+                    <p className="font-medium">{startDate ? new Date(startDate).toLocaleDateString('vi-VN') : '--'}</p>
+                  </div>
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500">Ngày kết thúc</p>
+                    <p className="font-medium">{endDate ? new Date(endDate).toLocaleDateString('vi-VN') : '--'}</p>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500">Số ngày</p>
+                    <p className="font-medium">
+                      {startDate && endDate 
+                        ? Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 3600 * 24)) + 1 
+                        : '--'} ngày
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="mt-2">
+                  <p className="text-xs text-gray-500 mb-1">Mô tả chuyến đi</p>
+                  <p className="text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    {description || 'Không có mô tả'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4 shadow-md">
+                <h4 className="font-medium text-gray-700 mb-3">Chi tiết kế hoạch:</h4>
+                <div 
+                  className="prose max-w-none text-sm text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: formatPlanText(plan) }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-48 text-center">
+              <div className="bg-blue-100 p-3 rounded-full mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <p className="text-gray-500">Nhập thông tin và nhấn "Tạo kế hoạch" để bắt đầu</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -209,7 +209,7 @@ export default function AuthPage() {
                     <button className="flip-card__btn" type="submit">
                       Đăng nhập
                     </button>
-                    <button className="flip-card__btn_google flex items-center justify-center" type="button" onClick={handleGoogleSignIn}>
+                    <button className="flip-card__btn_google flex items-center justify-center transition-transform duration-200 hover:scale-102" type="button" onClick={handleGoogleSignIn}>
                       <img src="/images/google_logo.svg" alt="Google" style={{ width: '20px', height: '20px', marginRight: '8px' }} />
                       Đăng nhập với Google
                     </button>
