@@ -113,8 +113,13 @@ export default function TravelPlanner() {
   const endIconRef = useRef<HTMLButtonElement | null>(null);
 
   const toDateOrNull = (value: string) => (value ? new Date(value) : null);
-  const formatInputDate = (date: Date | null) =>
-    date ? date.toISOString().split('T')[0] : '';
+  const formatInputDate = (date: Date | null) => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const syncCalendarWithInputs = (nextStart: string, nextEnd: string) => {
     setCalendarRange([toDateOrNull(nextStart), toDateOrNull(nextEnd)]);
@@ -224,10 +229,10 @@ export default function TravelPlanner() {
             <button
               type="button"
               aria-label="Chọn ngày bắt đầu trên lịch"
-              className="absolute inset-y-0 flex items-center text-orange-400"
+              className="absolute inset-y-0 flex items-center text-orange-400 p-[6px] flex justify-center items-center"
               onClick={toggleCalendar}
               ref={startIconRef}
-              style={{ right: '10px', border: 'none' }}
+              style={{ right: '10px', border: 'none', backgroundColor: '#E5E5E5', borderRadius: '50%' }}
             >
               <CalendarIcon size={20} strokeWidth={2} />
             </button>
@@ -249,10 +254,10 @@ export default function TravelPlanner() {
             <button
               type="button"
               aria-label="Chọn ngày kết thúc trên lịch"
-              className="absolute inset-y-0 right-3 flex items-center text-orange-400"
+              className="absolute inset-y-0 right-3 flex items-center text-orange-400 p-[6px] flex justify-center"
               onClick={toggleCalendar}
               ref={endIconRef}
-              style={{ right: '10px', border: 'none' }}
+              style={{ right: '10px', border: 'none', backgroundColor: '#E5E5E5', borderRadius: '50%' }}
             >
               <CalendarIcon size={20} strokeWidth={2} />
             </button>

@@ -88,19 +88,19 @@ export default function PlanDisplay({
                         </div>
                     )}
 
-                    <div className="w-full space-y-8 mt-8">
+                    <div className="w-full">
                         {tripPlan.itinerary.map((day) => (
-                            <div key={day.day} className="w-full relative">
+                            <div key={day.day} className="w-full relative mb-[20px]">
                                 <div className="sticky top-24 z-10 flex items-center gap-4 mb-4">
-                                    <div className="bg-blue-600 text-white font-bold px-4 py-1.5 rounded-r-full shadow-md -ml-4">
+                                    <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: '#FDB88F', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold' }}>
                                         Ngày {day.day}
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-700 !bg-white/90 px-3 py-1 rounded-md backdrop-blur-sm shadow-sm border border-gray-100">
-                                        {day.date} — <span className="text-blue-600">{day.theme}</span>
+                                    <h3 className="px-[8px] py-[2px] text-[16px]" style={{background: 'white', borderRadius: '5px', color: 'black', fontWeight: 'semibold', border: '1px solid #C4C4C4'}}>
+                                        {day.date}
                                     </h3>
                                 </div>
 
-                                <div className="w-full space-y-4 pl-2 md:pl-6 border-l-2 border-gray-100 ml-4 md:ml-0">
+                                <div className="w-full space-y-4 pl-[8px] border-l-2 flex flex-col gap-[20px]" style={{ borderLeftColor: '#FDB88F' }}>
                                     {day.events.map((event) => (
                                         <EventCard
                                             key={event.id}

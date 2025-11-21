@@ -27,48 +27,51 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
 
     return (
         // Added !bg-white to ensure card is white regardless of global theme
-        <div className={`w-full flex flex-row gap-[10px] p-[5px] transition-all duration-300 ${!isRejected ? 'hover:shadow-md' : ''}`} style={{
+        <div className={`w-full flex flex-col gap-[10px] p-[5px] transition-all duration-300 ${!isRejected ? 'hover:shadow-md' : ''}`} style={{
             borderRadius: '10px',
             background: isRejected ? '#FCA5A5' : 'white',
             border: isRejected ? '1px solid #EF4444' : '1px solid #E5E7EB',
-            opacity: isRejected ? 0.7 : 1
+            opacity: isRejected ? 0.7 : 1,
+            boxShadow: 'inset 0 0 4px rgba(0, 0, 0, 0.15)',
         }}>
+            <div className='w-full flex flex-row gap-[10px]'>
+                {/* Image Placeholder */}
+                <div className="h-[50px] w-[50px] flex-shrink-0 overflow-hidden relative group cursor-pointer" onClick={openMap} style={{ borderRadius: '10px' }}>
+                    <img
+                        src={`https://picsum.photos/seed/${event.id}/200/200`}
+                        alt={event.activity}
+                        className={`w-full h-full object-cover transition-all ${isRejected ? 'grayscale' : ''}`}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <ExternalLink className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                    </div>
+                </div>
 
-            {/* Image Placeholder */}
-            <div className="h-[50px] w-[50px] flex-shrink-0 overflow-hidden relative group cursor-pointer" onClick={openMap} style={{ borderRadius: '10px' }}>
-                <img
-                    src={`https://picsum.photos/seed/${event.id}/200/200`}
-                    alt={event.activity}
-                    className={`w-full h-full object-cover transition-all ${isRejected ? 'grayscale' : ''}`}
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                    <ExternalLink className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" />
+                {/* Main Content */}
+                <div className="w-full flex flex-col gap-[5px]">
+                    {/* Type */}
+                    <div className="flex justify-between items-start">
+                        <span className={`inline-block px-2 py-0.5 rounded capitalize ${event.type === 'food' ? 'bg-orange-100 text-orange-700' :
+                            event.type === 'transport' ? 'bg-gray-100 text-gray-700' :
+                                'bg-blue-100 text-blue-700'
+                            }`} style={{ fontSize: '14px', fontWeight: 'semibold' }}>
+                            {event.type}
+                        </span>
+                        <div>{event.time}</div>
+                        {event.endTime && <div >to {event.endTime}</div>}
+                    </div>
+
+                    {/* Name */}
+                    <h4 className={`text-lg font-bold truncate ${isRejected ? 'text-gray-500 line-through' : '!text-gray-800'}`} style={{ margin: '0' }}>
+                        {event.activity}
+                    </h4>
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="w-full flex flex-col gap-[5px]">
-
-                {/* Type */}
-                <div className="flex justify-between items-start">
-                    <span className={`inline-block px-2 py-0.5 rounded capitalize ${event.type === 'food' ? 'bg-orange-100 text-orange-700' :
-                        event.type === 'transport' ? 'bg-gray-100 text-gray-700' :
-                            'bg-blue-100 text-blue-700'
-                        }`} style={{ fontSize: '14px', fontWeight: 'semibold' }}>
-                        {event.type}
-                    </span>
-                    <div>{event.time}</div>
-                    {event.endTime && <div >to {event.endTime}</div>}
-                </div>
-
-                {/* Name */}
-                <h4 className={`text-lg font-bold truncate ${isRejected ? 'text-gray-500 line-through' : '!text-gray-800'}`} style={{ margin: '0' }}>
-                    {event.activity}
-                </h4>
-
+            <div className='w-full flex flex-col gap-[10px]'>
                 {/* Address / Location */}
                 <div
-                    className="flex items-start gap-[5px] cursor-pointer hover:text-blue-600 transition-colors group" style={{ fontSize: '14px', color: 'gray' }}
+                    className="flex w-full items-center gap-[5px] cursor-pointer transition-colors group" style={{ fontSize: '14px', color: 'gray', justifyContent: 'center' }}
                     onClick={openMap}
                     title="View on Google Maps"
                 >
@@ -83,11 +86,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
                 </p>
 
                 <div className="flex flex-wrap gap-[10px]">
-                    <span className="flex items-center gap-[2px] p-[2px]" style={{ borderRadius: '5px', border: '1px solid #E5E7EB', backgroundColor: '#F0F4F9' }}>
+                    <span className="flex items-center gap-[2px] py-[2px] px-[5px]" style={{ borderRadius: '5px', border: '1px solid #E5E7EB', backgroundColor: '#F0F4F9' }}>
                         <Wallet className="w-3 h-3 text-green-600" />
                         {event.costEstimate > 0 ? <span className="font-semibold text-gray-700">{event.costEstimate.toLocaleString()} {event.currency}</span> : <span className="text-green-600 font-medium">Free</span>}
                     </span>
-                    <span className="flex items-center gap-[2px] p-[2px]" style={{ borderRadius: '5px', border: '1px solid #E5E7EB', backgroundColor: '#F0F4F9' }}>
+                    <span className="flex items-center gap-[2px] py-[2px] px-[5px]" style={{ borderRadius: '5px', border: '1px solid #E5E7EB', backgroundColor: '#F0F4F9' }}>
                         <Bus className="w-3 h-3 text-purple-600" />
                         {event.transportDuration} ({event.transportMethod})
                     </span>
@@ -125,16 +128,14 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
                                     className="flex items-center justify-center p-[2px]" style={{ fontSize: '12px', color: 'red', fontWeight: 'semibold', backgroundColor: 'white', border: '1px solid red', borderRadius: '5px' }}
                                     title="Bỏ địa điểm này"
                                 >
-                                    <X className="w-auto h-full group-hover:scale-105 transition-transform" />
-                                    Loại bỏ
+                                    <X className="w-auto h-full" />
+                                    Bỏ
                                 </button>
                             </>
                         )}
                     </div>
                 </div>
-
             </div>
-
             {isRejected && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-[1px] rounded-xl pointer-events-none z-10">
                     <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm border border-red-200">

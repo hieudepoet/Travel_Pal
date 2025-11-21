@@ -101,6 +101,7 @@ const Calendar = ({
           maxDate={maxDate}
           weekendDays={[0]}
           allowDeselect
+          allowSingleDateInRange
           classNames={{
             month: "mantine-month",
             day: "mantine-day",
