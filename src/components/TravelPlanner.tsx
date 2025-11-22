@@ -44,6 +44,7 @@ export default function TravelPlanner() {
         style: [],
         prompt: description,
         budget: 'moderate',
+        partySize: { adults: 2, children: 0 },
       };
 
       const plan = await generateTrip(userPreferences);
