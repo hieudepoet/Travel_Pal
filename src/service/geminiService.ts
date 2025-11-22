@@ -134,9 +134,22 @@ const extractJsonFromText = (text: string): any => {
  */
 const sanitizePlan = (plan: any): TripPlan => {
   if (!plan) throw new Error("Generated plan is null");
+
+  // Handle tips: convert array to string if needed
+  let safeTips = "Enjoy your trip!";
+  if (plan.tips) {
+    if (Array.isArray(plan.tips)) {
+      safeTips = plan.tips.join(". ");
+    } else if (typeof plan.tips === 'string') {
+      safeTips = plan.tips;
+    } else {
+      safeTips = String(plan.tips);
+    }
+  }
+
   return {
     summary: plan.summary || "Your Trip Plan",
-    tips: plan.tips || "Enjoy your trip!",
+    tips: safeTips,
     stats: {
       totalCost: plan.stats?.totalCost || 0,
       currency: plan.stats?.currency || "USD",

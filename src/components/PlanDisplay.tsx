@@ -17,6 +17,7 @@ interface PlanDisplayProps {
     onRestore: (id: string) => void;
     onRegenerate?: () => void;
     isRegenerating?: boolean;
+    onAddDayToCalendar?: (dayIndex: number) => void;
 }
 
 export default function PlanDisplay({
@@ -26,7 +27,8 @@ export default function PlanDisplay({
     onReject,
     onRestore,
     onRegenerate,
-    isRegenerating = false
+    isRegenerating = false,
+    onAddDayToCalendar
 }: PlanDisplayProps) {
 
     // Use fake data if no plan is provided
@@ -87,16 +89,32 @@ export default function PlanDisplay({
                         </div>
                     )}
 
-                    <div className="w-full flex flex-col gap-[30px] mt-[30px]" style={{ padding:'0 8%'}}>
+                    <div className="w-full flex flex-col gap-[30px] mt-[30px]" style={{ padding: '0 8%' }}>
                         {displayPlan.itinerary.map((day) => (
                             <div key={day.day} className="w-full relative mr-[30px]">
-                                <div className=" flex items-center gap-4 mb-[10px]">
-                                    <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: '#FDB88F', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold' }}>
-                                        Ngày {day.day}
+                                <div className=" flex items-center justify-between gap-4 mb-[10px]">
+                                    <div className="flex items-center gap-4">
+                                        <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: '#FDB88F', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold' }}>
+                                            Ngày {day.day}
+                                        </div>
+                                        <h3 className="px-[8px] py-[2px] text-[16px]" style={{ background: 'white', borderRadius: '5px', color: 'black', fontWeight: 'semibold', border: '1px solid #C4C4C4' }}>
+                                            {day.date}
+                                        </h3>
                                     </div>
-                                    <h3 className="px-[8px] py-[2px] text-[16px]" style={{ background: 'white', borderRadius: '5px', color: 'black', fontWeight: 'semibold', border: '1px solid #C4C4C4' }}>
-                                        {day.date}
-                                    </h3>
+                                    {onAddDayToCalendar && (
+                                        <button
+                                            onClick={() => onAddDayToCalendar(day.day - 1)}
+                                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all hover:bg-blue-600"
+                                            style={{
+                                                backgroundColor: '#3b82f6',
+                                                color: 'white',
+                                                border: 'none',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            📅 Add to Calendar
+                                        </button>
+                                    )}
                                 </div>
 
                                 <div className="w-full space-y-4 pl-[8px] border-l-2 flex flex-col gap-[20px]" style={{ borderLeftColor: '#FDB88F' }}>

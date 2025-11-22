@@ -6,7 +6,7 @@ import PlanDisplay from '@/components/PlanDisplay';
 import { ChatWindow } from '@/components/ChatWindow';
 import { TripPlan, ChatMessage } from '@/types/types';
 import { sendChatMessage, updateTrip } from '@/service/geminiService';
-import { addTripToCalendar } from '@/service/calendarService';
+import { addTripToCalendar, addDayToCalendar } from '@/service/calendarService';
 import { ArrowLeft, Share2, Calendar, Map, Sparkles } from 'lucide-react';
 import { toast } from 'react-toastify';
 
@@ -16,7 +16,6 @@ export default function TripPage() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isChatLoading, setIsChatLoading] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
-    const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
         const savedPlan = sessionStorage.getItem('currentTripPlan');
@@ -115,29 +114,30 @@ export default function TripPage() {
         }
     };
 
-    const handleSyncCalendar = async () => {
+    const handleSyncCalendar = () => {
         if (!tripPlan) return;
 
-        const token = sessionStorage.getItem('google_access_token');
-        if (!token) {
-            toast.error("Vui lòng đăng nhập lại để cấp quyền truy cập Calendar!");
-            return;
-        }
-
-        setIsSyncing(true);
         try {
-            const { successCount, failCount } = await addTripToCalendar(tripPlan, token);
-            if (successCount > 0) {
-                toast.success(`Đã thêm ${successCount} sự kiện vào Calendar!`);
-            }
-            if (failCount > 0) {
-                toast.warn(`Có ${failCount} sự kiện không thể thêm.`);
-            }
+            const { successCount } = addTripToCalendar(tripPlan);
+            toast.success(`Đang mở ${successCount} tab Google Calendar. Vui lòng click "Save" ở mỗi tab!`);
         } catch (error) {
             console.error("Sync error:", error);
-            toast.error("Lỗi khi đồng bộ Calendar.");
-        } finally {
-            setIsSyncing(false);
+            toast.error("Lỗi khi mở Calendar.");
+        }
+    };
+
+    const handleAddDayToCalendar = (dayIndex: number) => {
+        if (!tripPlan) return;
+
+        const dayPlan = tripPlan.itinerary[dayIndex];
+        if (!dayPlan) return;
+
+        try {
+            const { successCount } = addDayToCalendar(dayPlan);
+            toast.success(`Đang mở ${successCount} tab cho Ngày ${dayPlan.day}. Vui lòng click "Save" ở mỗi tab!`);
+        } catch (error) {
+            console.error("Sync day error:", error);
+            toast.error("Lỗi khi mở Calendar.");
         }
     };
 
@@ -243,7 +243,6 @@ export default function TripPage() {
                         </button>
                         <button
                             onClick={handleSyncCalendar}
-                            disabled={isSyncing}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -252,28 +251,21 @@ export default function TripPage() {
                                 fontSize: '0.875rem',
                                 fontWeight: 600,
                                 color: 'white',
-                                backgroundColor: isSyncing ? '#9ca3af' : '#111827',
-                                border: 'none',
-                                borderRadius: '9999px',
-                                cursor: isSyncing ? 'not-allowed' : 'pointer',
+                                backgroundColor: '#111827',
                                 transition: 'all 0.2s ease',
                                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                             }}
                             onMouseOver={(e) => {
-                                if (!isSyncing) {
-                                    e.currentTarget.style.backgroundColor = '#1f2937';
-                                    e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-                                }
+                                e.currentTarget.style.backgroundColor = '#1f2937';
+                                e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
                             }}
                             onMouseOut={(e) => {
-                                if (!isSyncing) {
-                                    e.currentTarget.style.backgroundColor = '#111827';
-                                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-                                }
+                                e.currentTarget.style.backgroundColor = '#111827';
+                                e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
                             }}
                         >
                             <Calendar size={16} />
-                            {isSyncing ? 'Đang đồng bộ...' : 'Sync to Calendar'}
+                            Add to Calendar
                         </button>
                     </div>
                 </div>
@@ -298,6 +290,7 @@ export default function TripPage() {
                             onRestore={handleRestore}
                             onRegenerate={handleRegenerate}
                             isRegenerating={isRegenerating}
+                            onAddDayToCalendar={handleAddDayToCalendar}
                         />
                     </div>
                 </div>
