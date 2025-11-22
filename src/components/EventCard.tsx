@@ -43,37 +43,19 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
       ? 'border-red-300 bg-red-50 opacity-60'
       : 'border-gray-200 hover:shadow-md'
       }`}>
-      <div className="flex gap-3 p-[10px]" style={{ borderRadius: '10px', background: `linear-gradient(to bottom right, ${typeColor.backgroundColor}15, white)`, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-        {/* Image */}
-        <div
-          className="w-[150px] h-[150px] flex-shrink-0 rounded-lg overflow-hidden cursor-pointer group relative mr-[10px]" style={{ borderRadius: '10px' }}
-          onClick={openMap}
-        >
-          <span style={{ ...typeColor, padding: '0.25rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '600', textTransform: 'capitalize', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '10px', left: '10px' }}>
+      <div className="flex gap-3 p-[10px]" style={{ borderRadius: '10px', background: `linear-gradient(to bottom right, ${typeColor.backgroundColor}15, white)`, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', alignItems: "center" }}>
+          <span style={{ ...typeColor, padding: '0.25rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '600', textTransform: 'capitalize', display: 'flex', alignItems: 'center', justifyContent: 'center', width: "50px", height: "50px", marginRight: "20px" }}>
             <typeColor.icon className="w-4 h-4" />
           </span>
-          <Image
-            src={`https://picsum.photos/seed/${event.id}/200/200`}
-            alt={event.activity}
-            width={200}
-            height={200}
-            className={`w-full h-full object-cover transition-all ${isRejected ? 'grayscale' : ''}`}
-          />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-            <ExternalLink className="text-white opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5" />
-          </div>
-        </div>
 
         {/* Content */}
         <div className="flex flex-col w-full gap-[5px]">
-          <div className="flex items-start justify-end gap-2 mb-2">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h4 className={`text-base font-bold mb-1 ${isRejected ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+              {event.activity}
+            </h4>
             <span className="text-sm font-medium text-gray-600">{event.time}</span>
           </div>
-
-          <h4 className={`text-base font-bold mb-1 ${isRejected ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
-            {event.activity}
-          </h4>
-
           <div
             className="flex items-start gap-1.5 mb-2 cursor-pointer group text-sm text-gray-600" style={{ color: '#A6A6A6' }}
             onClick={openMap}
