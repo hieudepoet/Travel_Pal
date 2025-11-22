@@ -149,6 +149,8 @@ const sanitizePlan = (plan: any): TripPlan => {
       events: Array.isArray(day.events) ? day.events.map((evt: any) => ({
         ...evt,
         id: evt.id || Math.random().toString(36).substr(2, 9),
+        time: evt.time || "09:00 AM", // Default time to prevent split error
+        locationName: evt.locationName || "Unknown Location", // Default location
         status: evt.status || 'accepted',
         type: evt.type || 'activity',
         costEstimate: evt.costEstimate || 0
@@ -212,7 +214,7 @@ export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> =>
     const plan = sanitizePlan(rawPlan);
 
     // Initialize the Chat Session immediately after generation
-    // This fixes the "cannot chat" issue
+    // FIXED: Removed googleSearch from tools here to prevent "Tool use with function calling is unsupported" error
     tripChatSession = ai.chats.create({
       model: MODEL_NAME,
       config: {
@@ -220,8 +222,9 @@ export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> =>
                 When the user asks to change the plan (e.g., "Change dinner to sushi"), you MUST:
                 1. Call the 'update_itinerary' tool with the COMPLETE updated JSON.
                 2. Do not just describe the change in text.
-                3. Keep text responses short.`,
-        tools: [{ functionDeclarations: [updateItineraryTool] }, { googleSearch: {} }]
+                3. Keep text responses short.
+                4. Use your internal knowledge for recommendations (Search is disabled for faster editing).`,
+        tools: [{ functionDeclarations: [updateItineraryTool] }]
       },
       history: [
         { role: 'user', parts: [{ text: "I have just generated this trip plan. I am ready to review it." }] },
@@ -245,9 +248,12 @@ export const sendChatMessage = async (message: string, currentPlan: TripPlan): P
   if (!tripChatSession) {
     // Fallback: If session was lost (e.g. page refresh), try to recreate it roughly
     console.warn("Chat session lost, recreating...");
+    // FIXED: Removed googleSearch here as well
     tripChatSession = ai.chats.create({
       model: MODEL_NAME,
-      config: { tools: [{ functionDeclarations: [updateItineraryTool] }, { googleSearch: {} }] }
+      config: {
+        tools: [{ functionDeclarations: [updateItineraryTool] }]
+      }
     });
   }
 
