@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { UserPreferences, TravelStyle } from '../types/types';
-import { Plane, Calendar, MapPin, Sparkles, User, Baby, Wallet, DollarSign } from 'lucide-react';
+import { Plane, Calendar as CalendarIcon, MapPin, Sparkles, User, Baby, Wallet, DollarSign } from 'lucide-react';
+import Calendar from './Calendar';
 
 interface InputFormProps {
     onSubmit: (prefs: UserPreferences) => void;
@@ -91,31 +92,30 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
                     </div>
 
                     {/* Dates */}
-                    <div>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Ngày bắt đầu</label>
-                        <div style={{ position: 'relative' }}>
-                            <Calendar style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', width: '20px', height: '20px' }} />
-                            <input
-                                type="date"
-                                required
-                                value={startDate}
-                                onChange={e => setStartDate(e.target.value)}
-                                style={{ width: '100%', paddingLeft: '40px', paddingRight: '16px', paddingTop: '10px', paddingBottom: '10px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none', transition: 'all 0.2s', backgroundColor: 'white', color: '#111827' }}
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Ngày kết thúc</label>
-                        <div style={{ position: 'relative' }}>
-                            <Calendar style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', width: '20px', height: '20px' }} />
-                            <input
-                                type="date"
-                                required
-                                value={endDate}
-                                onChange={e => setEndDate(e.target.value)}
-                                style={{ width: '100%', paddingLeft: '40px', paddingRight: '16px', paddingTop: '10px', paddingBottom: '10px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none', transition: 'all 0.2s', backgroundColor: 'white', color: '#111827' }}
-                            />
-                        </div>
+                    <div style={{ display: 'grid', gap: '16px' }}>
+                        <Calendar
+                            type="default"
+                            value={startDate ? new Date(startDate) : null}
+                            onChange={(date) => {
+                                if (!date) return setStartDate('');
+                                const dateObj = Array.isArray(date) ? date[0] : date;
+                                setStartDate(dateObj ? dateObj.toISOString().split('T')[0] : '');
+                            }}
+                            label="Ngày bắt đầu"
+                            style={{ width: '100%' }}
+                        />
+                        <Calendar
+                            type="default"
+                            value={endDate ? new Date(endDate) : null}
+                            onChange={(date) => {
+                                if (!date) return setEndDate('');
+                                const dateObj = Array.isArray(date) ? date[0] : date;
+                                setEndDate(dateObj ? dateObj.toISOString().split('T')[0] : '');
+                            }}
+                            label="Ngày kết thúc"
+                            minDate={startDate ? new Date(startDate) : undefined}
+                            style={{ width: '100%' }}
+                        />
                     </div>
                 </div>
 
