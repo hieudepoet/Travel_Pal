@@ -30,25 +30,144 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage,
     setInput('');
   };
 
+  // Define common styles
+  const styles = {
+    container: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      height: '600px',
+      backgroundColor: 'white',
+      borderRadius: '12px',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      border: '1px solid #e5e7eb',
+      overflow: 'hidden'
+    },
+    messagesContainer: {
+      flex: 1,
+      overflowY: 'auto' as const,
+      padding: '16px',
+      backgroundColor: '#f9fafb',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '12px'
+    },
+    emptyState: {
+      textAlign: 'center' as const,
+      color: '#9ca3af',
+      marginTop: '40px'
+    },
+    messageRow: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '8px'
+    },
+    messageBubble: {
+      maxWidth: '75%',
+      padding: '12px',
+      borderRadius: '16px',
+      fontSize: '14px',
+      lineHeight: '1.4'
+    },
+    userMessage: {
+      background: 'linear-gradient(to right, #f97316, #ea580c)',
+      color: 'white',
+      borderTopRightRadius: 0
+    },
+    botMessage: {
+      backgroundColor: 'white',
+      color: '#1f2937',
+      border: '1px solid #e5e7eb',
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+      borderTopLeftRadius: 0
+    },
+    avatar: {
+      width: '32px',
+      height: '32px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0
+    },
+    avatarUser: {
+      backgroundColor: '#ffedd5',
+      color: '#9a3412'
+    },
+    avatarBot: {
+      backgroundColor: '#e5e7eb',
+      color: '#4b5563'
+    },
+    form: {
+      padding: '16px',
+      backgroundColor: 'white',
+      borderTop: '1px solid #e5e7eb',
+      flexShrink: 0
+    },
+    formInner: {
+      display: 'flex',
+      gap: '8px'
+    },
+    input: {
+      flex: 1,
+      padding: '8px 16px',
+      borderRadius: '9999px',
+      border: '1px solid #d1d5db',
+      outline: 'none',
+      fontSize: '14px',
+      color: '#111827',
+      backgroundColor: 'white',
+      transition: 'all 0.2s'
+    },
+    inputFocus: {
+      borderColor: '#f97316',
+      boxShadow: '0 0 0 2px rgba(249, 115, 22, 0.5)'
+    },
+    inputDisabled: {
+      backgroundColor: '#f3f4f6',
+      cursor: 'not-allowed'
+    },
+    button: {
+      padding: '8px',
+      background: 'linear-gradient(to right, #f97316, #ea580c)',
+      color: 'white',
+      border: 'none',
+      borderRadius: '9999px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+    },
+    buttonHover: {
+      background: 'linear-gradient(to right, #ea580c, #c2410c)'
+    },
+    buttonDisabled: {
+      background: 'linear-gradient(to right, #d1d5db, #9ca3af)',
+      cursor: 'not-allowed'
+    },
+    loadingDots: {
+      display: 'flex',
+      gap: '4px'
+    },
+    dot: {
+      width: '8px',
+      height: '8px',
+      backgroundColor: '#9ca3af',
+      borderRadius: '50%',
+      animation: 'bounce 1.4s infinite ease-in-out both'
+    }
+  };
+
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white flex items-center gap-3 flex-shrink-0">
-        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-          <Bot className="w-5 h-5" />
-        </div>
-        <div>
-          <h3 className="font-bold text-sm">Trợ lý AI</h3>
-          <p className="text-xs text-orange-100">Luôn sẵn sàng hỗ trợ bạn</p>
-        </div>
-      </div>
+    <div style={styles.container}>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+      <div style={styles.messagesContainer}>
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 mt-10">
-            <Bot className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="text-sm">
+          <div style={styles.emptyState}>
+            <Bot style={{ width: '48px', height: '48px', margin: '0 auto 12px', color: '#d1d5db' }} />
+            <p style={{ margin: 0, fontSize: '14px' }}>
               Hỏi tôi để thay đổi kế hoạch, thêm nhà hàng, hoặc kiểm tra thời tiết!
             </p>
           </div>
@@ -57,26 +176,29 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage,
         {messages.map((msg, idx) => (
           <div 
             key={idx} 
-            className={`flex items-start gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+            style={{
+              ...styles.messageRow,
+              flexDirection: msg.role === 'user' ? 'row-reverse' : 'row'
+            }}
           >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-              msg.role === 'user' 
-                ? 'bg-orange-100' 
-                : 'bg-gray-200'
-            }`}>
+            <div 
+              style={{
+                ...styles.avatar,
+                ...(msg.role === 'user' ? styles.avatarUser : styles.avatarBot)
+              }}
+            >
               {msg.role === 'user' ? (
-                <User className="w-4 h-4 text-orange-600" />
+                <User style={{ width: '16px', height: '16px' }} />
               ) : (
-                <Bot className="w-4 h-4 text-gray-600" />
+                <Bot style={{ width: '16px', height: '16px' }} />
               )}
             </div>
             
             <div 
-              className={`max-w-[75%] p-3 rounded-2xl text-sm ${
-                msg.role === 'user' 
-                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-tr-none' 
-                  : 'bg-white text-gray-800 border border-gray-200 shadow-sm rounded-tl-none'
-              }`}
+              style={{
+                ...styles.messageBubble,
+                ...(msg.role === 'user' ? styles.userMessage : styles.botMessage)
+              }}
             >
               {msg.text}
             </div>
@@ -84,15 +206,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage,
         ))}
         
         {isLoading && (
-          <div className="flex items-start gap-2">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-gray-600" />
+          <div style={styles.messageRow}>
+            <div style={{ ...styles.avatar, ...styles.avatarBot }}>
+              <Bot style={{ width: '16px', height: '16px' }} />
             </div>
-            <div className="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+            <div style={{ ...styles.messageBubble, ...styles.botMessage }}>
+              <div style={styles.loadingDots}>
+                <span style={{ ...styles.dot, animationDelay: '0s' }}></span>
+                <span style={{ ...styles.dot, animationDelay: '0.1s' }}></span>
+                <span style={{ ...styles.dot, animationDelay: '0.2s' }}></span>
               </div>
             </div>
           </div>
@@ -102,26 +224,61 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage,
       </div>
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-200 flex-shrink-0">
-        <div className="flex gap-2">
+      <form 
+        onSubmit={handleSubmit} 
+        style={styles.form}
+      >
+        <div style={styles.formInner}>
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Thay đổi kế hoạch..."
             disabled={isLoading}
-            className="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-sm text-gray-900 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+            style={{
+              ...styles.input,
+              ...(isLoading && styles.inputDisabled),
+              ...(document.activeElement === document.querySelector('input') && styles.inputFocus)
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#f97316';
+              e.target.style.boxShadow = '0 0 0 2px rgba(249, 115, 22, 0.5)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#d1d5db';
+              e.target.style.boxShadow = 'none';
+            }}
           />
           <button 
             type="submit" 
             disabled={isLoading || !input.trim()}
-            className="p-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all shadow-sm"
+            style={{
+              ...styles.button,
+              ...(isLoading || !input.trim() ? styles.buttonDisabled : {})
+            }}
+            onMouseOver={(e) => {
+              if (!isLoading && input.trim()) {
+                e.currentTarget.style.background = 'linear-gradient(to right, #ea580c, #c2410c)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!isLoading && input.trim()) {
+                e.currentTarget.style.background = 'linear-gradient(to right, #f97316, #ea580c)';
+              }
+            }}
             aria-label="Gửi tin nhắn"
           >
-            <Send className="w-5 h-5" />
+            <Send style={{ width: '20px', height: '20px' }} />
           </button>
         </div>
       </form>
+
+      <style jsx global>{`
+        @keyframes bounce {
+          0%, 80%, 100% { transform: scale(0.6); }
+          40% { transform: scale(1); }
+        }
+      `}</style>
     </div>
   );
 };

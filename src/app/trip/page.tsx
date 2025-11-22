@@ -115,67 +115,145 @@ export default function TripPage() {
     if (!tripPlan) return null;
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
-            {/* Left Sidebar - Chat */}
-            <div className="w-[400px] flex flex-col border-r border-gray-200 bg-white z-20 shadow-2xl">
-                <div className="p-5 border-b border-gray-100 flex items-center gap-4 bg-white/80 backdrop-blur-sm">
-                    <button
-                        onClick={() => router.push('/home')}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-orange-600"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                            <Sparkles className="text-orange-500 w-4 h-4" />
-                            Trợ lý AI
-                        </h1>
-                        <p className="text-xs text-gray-500 font-medium">Luôn sẵn sàng hỗ trợ</p>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-hidden bg-gray-50/50">
-                    <ChatWindow
-                        messages={messages}
-                        onSendMessage={handleSendMessage}
-                        isLoading={isChatLoading}
-                    />
-                </div>
-            </div>
-
+        <div style={{
+            display: 'flex',
+            height: '100vh',
+            backgroundColor: '#f9fafb',
+            overflow: 'hidden',
+            fontFamily: 'sans-serif'
+        }}>
             {/* Main Content - Plan Display */}
-            <div className="flex-1 flex flex-col h-full overflow-hidden relative bg-white">
+            <div style={{
+                flex: '1 1 0%',
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                overflow: 'hidden',
+                position: 'relative',
+                backgroundColor: 'white'
+            }}>
                 {/* Top Bar */}
-                <div className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 z-10 sticky top-0">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
+                <div style={{
+                    height: '5rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(4px)',
+                    borderBottom: '1px solid #f3f4f6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0 2rem',
+                    zIndex: 10,
+                    position: 'sticky',
+                    top: 0
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem'
+                    }}>
+                        <div style={{
+                            width: '2.5rem',
+                            height: '2.5rem',
+                            borderRadius: '9999px',
+                            backgroundColor: '#fffbeb',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ea580c'
+                        }}>
                             <Map size={20} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                            <h2 style={{
+                                fontSize: '1.25rem',
+                                fontWeight: 'bold',
+                                color: '#111827',
+                                lineHeight: '1.25',
+                                margin: 0
+                            }}>
                                 {tripPlan.itinerary[0]?.events[0]?.locationName?.split(',').pop() || 'Chuyến đi của bạn'}
                             </h2>
-                            <p className="text-sm text-gray-500 font-medium">
+                            <p style={{
+                                fontSize: '0.875rem',
+                                color: '#6b7280',
+                                fontWeight: 500,
+                                margin: 0
+                            }}>
                                 {tripPlan.stats.durationDays} ngày • {tripPlan.stats.totalEvents} địa điểm
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex gap-3">
-                        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-full transition-all border border-gray-200">
+                    <div style={{
+                        display: 'flex',
+                        gap: '0.75rem'
+                    }}>
+                        <button style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.875rem',
+                            fontWeight: 600,
+                            color: '#374151',
+                            backgroundColor: 'transparent',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '9999px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f3f4f6';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        >
                             <Share2 size={16} />
                             Chia sẻ
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 rounded-full transition-all shadow-lg hover:shadow-xl">
+                        <button style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.875rem',
+                            fontWeight: 600,
+                            color: 'white',
+                            backgroundColor: '#111827',
+                            border: 'none',
+                            borderRadius: '9999px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#1f2937';
+                            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = '#111827';
+                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                        }}
+                        >
                             <Download size={16} />
-                            Tải xuống
+                            Lưu vào Calendar
                         </button>
                     </div>
                 </div>
 
                 {/* Scrollable Plan Area */}
-                <div className="flex-1 overflow-y-auto bg-gray-50/30 scroll-smooth">
-                    <div className="max-w-6xl mx-auto py-10 px-6">
+                <div style={{
+                    flex: '1 1 0%',
+                    overflowY: 'auto',
+                    backgroundColor: 'rgba(249, 250, 251, 0.3)',
+                    scrollBehavior: 'smooth'
+                }}>
+                    <div style={{
+                        maxWidth: '72rem',
+                        margin: '0 auto',
+                        padding: '2.5rem 1.5rem'
+                    }}>
                         <PlanDisplay
                             tripPlan={tripPlan}
                             isLoading={false}
@@ -186,6 +264,83 @@ export default function TripPage() {
                             isRegenerating={isRegenerating}
                         />
                     </div>
+                </div>
+            </div>
+                        <div style={{
+                width: '400px',
+                display: 'flex',
+                flexDirection: 'column',
+                borderRight: '1px solid #e5e7eb',
+                backgroundColor: 'white',
+                zIndex: 20,
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}>
+                <div style={{
+                    padding: '1.25rem',
+                    borderBottom: '1px solid #f3f4f6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(4px)'
+                }}>
+                    <button
+                        onClick={() => router.push('/home')}
+                        style={{
+                            padding: '0.5rem',
+                            borderRadius: '9999px',
+                            transition: 'all 0.2s ease',
+                            color: '#6b7280',
+                            border: 'none',
+                            background: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f3f4f6';
+                            e.currentTarget.style.color = '#ea580c';
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.color = '#6b7280';
+                        }}
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 style={{
+                            fontWeight: 'bold',
+                            fontSize: '1.125rem',
+                            color: '#111827',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            margin: 0
+                        }}>
+                            <Sparkles style={{ color: '#f97316', width: '1rem', height: '1rem' }} />
+                            Trợ lý AI
+                        </h1>
+                        <p style={{
+                            fontSize: '0.75rem',
+                            color: '#6b7280',
+                            fontWeight: 500,
+                            margin: 0
+                        }}>Luôn sẵn sàng hỗ trợ</p>
+                    </div>
+                </div>
+
+                <div style={{
+                    flex: '1 1 0%',
+                    overflow: 'hidden',
+                    backgroundColor: 'rgba(249, 250, 251, 0.5)'
+                }}>
+                    <ChatWindow
+                        messages={messages}
+                        onSendMessage={handleSendMessage}
+                        isLoading={isChatLoading}
+                    />
                 </div>
             </div>
         </div>
