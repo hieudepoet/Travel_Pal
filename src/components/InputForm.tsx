@@ -8,7 +8,7 @@ interface InputFormProps {
     onSubmit: (prefs: UserPreferences) => void;
     isLoading: boolean;
 }
-
+// PR đi 
 export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => {
     const [destination, setDestination] = useState('Đà Nẵng, Việt Nam');
     const [startDate, setStartDate] = useState('');
