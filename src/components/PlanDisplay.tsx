@@ -87,10 +87,10 @@ export default function PlanDisplay({
                         </div>
                     )}
 
-                    <div className="w-full flex flex-col">
+                    <div className="w-full flex flex-col gap-[30px] mt-[30px]">
                         {displayPlan.itinerary.map((day) => (
                             <div key={day.day} className="w-full relative mr-[30px]">
-                                <div className="sticky top-24 z-10 flex items-center gap-4 mb-4">
+                                <div className=" flex items-center gap-4 mb-[10px]">
                                     <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: '#FDB88F', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold' }}>
                                         Ngày {day.day}
                                     </div>
