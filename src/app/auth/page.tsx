@@ -111,7 +111,17 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/calendar');
+
       const result = await signInWithPopup(auth, provider);
+
+      // Save token for Calendar API
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+      if (token) {
+        sessionStorage.setItem('google_access_token', token);
+      }
+
       const user = result.user;
       console.log('Google sign-in successful:', user);
       toast.success('Đăng nhập với Google thành công!');

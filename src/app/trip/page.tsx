@@ -6,7 +6,9 @@ import PlanDisplay from '@/components/PlanDisplay';
 import { ChatWindow } from '@/components/ChatWindow';
 import { TripPlan, ChatMessage } from '@/types/types';
 import { sendChatMessage, updateTrip } from '@/service/geminiService';
-import { ArrowLeft, Share2, Download, Map, Sparkles } from 'lucide-react';
+import { addTripToCalendar } from '@/service/calendarService';
+import { ArrowLeft, Share2, Calendar, Map, Sparkles } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 export default function TripPage() {
     const router = useRouter();
@@ -14,6 +16,7 @@ export default function TripPage() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isChatLoading, setIsChatLoading] = useState(false);
     const [isRegenerating, setIsRegenerating] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     useEffect(() => {
         const savedPlan = sessionStorage.getItem('currentTripPlan');
@@ -112,6 +115,32 @@ export default function TripPage() {
         }
     };
 
+    const handleSyncCalendar = async () => {
+        if (!tripPlan) return;
+
+        const token = sessionStorage.getItem('google_access_token');
+        if (!token) {
+            toast.error("Vui lòng đăng nhập lại để cấp quyền truy cập Calendar!");
+            return;
+        }
+
+        setIsSyncing(true);
+        try {
+            const { successCount, failCount } = await addTripToCalendar(tripPlan, token);
+            if (successCount > 0) {
+                toast.success(`Đã thêm ${successCount} sự kiện vào Calendar!`);
+            }
+            if (failCount > 0) {
+                toast.warn(`Có ${failCount} sự kiện không thể thêm.`);
+            }
+        } catch (error) {
+            console.error("Sync error:", error);
+            toast.error("Lỗi khi đồng bộ Calendar.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     if (!tripPlan) return null;
 
     return (
@@ -202,42 +231,49 @@ export default function TripPage() {
                             cursor: 'pointer',
                             transition: 'all 0.2s ease'
                         }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#f3f4f6';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f3f4f6';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
                         >
                             <Share2 size={16} />
                             Chia sẻ
                         </button>
-                        <button style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.5rem 1rem',
-                            fontSize: '0.875rem',
-                            fontWeight: 600,
-                            color: 'white',
-                            backgroundColor: '#111827',
-                            border: 'none',
-                            borderRadius: '9999px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                        }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = '#1f2937';
-                            e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = '#111827';
-                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
-                        }}
+                        <button
+                            onClick={handleSyncCalendar}
+                            disabled={isSyncing}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.5rem 1rem',
+                                fontSize: '0.875rem',
+                                fontWeight: 600,
+                                color: 'white',
+                                backgroundColor: isSyncing ? '#9ca3af' : '#111827',
+                                border: 'none',
+                                borderRadius: '9999px',
+                                cursor: isSyncing ? 'not-allowed' : 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                            }}
+                            onMouseOver={(e) => {
+                                if (!isSyncing) {
+                                    e.currentTarget.style.backgroundColor = '#1f2937';
+                                    e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                                }
+                            }}
+                            onMouseOut={(e) => {
+                                if (!isSyncing) {
+                                    e.currentTarget.style.backgroundColor = '#111827';
+                                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                                }
+                            }}
                         >
-                            <Download size={16} />
-                            Lưu vào Calendar
+                            <Calendar size={16} />
+                            {isSyncing ? 'Đang đồng bộ...' : 'Sync to Calendar'}
                         </button>
                     </div>
                 </div>
@@ -266,7 +302,7 @@ export default function TripPage() {
                     </div>
                 </div>
             </div>
-                        <div style={{
+            <div style={{
                 width: '400px',
                 display: 'flex',
                 flexDirection: 'column',

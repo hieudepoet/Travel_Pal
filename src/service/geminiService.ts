@@ -33,7 +33,9 @@ const eventSchema: Schema = {
     transportMethod: { type: Type.STRING },
     transportDuration: { type: Type.STRING },
     type: { type: Type.STRING, enum: ["activity", "food", "lodging", "transport"] },
-    status: { type: Type.STRING, enum: ["accepted", "rejected", "pending"] }
+    status: { type: Type.STRING, enum: ["accepted", "rejected", "pending"] },
+    bookingLink: { type: Type.STRING, description: "Link đặt vé Klook nếu có" },
+    notes: { type: Type.STRING, description: "Lưu ý quan trọng: Trang phục, giờ mở cửa, độ đông đúc..." }
   },
   required: ["id", "time", "activity", "locationName", "costEstimate", "type"]
 };
@@ -176,7 +178,9 @@ const sanitizePlan = (plan: any): TripPlan => {
         type: evt.type || 'activity',
         costEstimate: evt.costEstimate || 0,
         transportMethod: evt.transportMethod || "Tự túc",
-        transportDuration: evt.transportDuration || "15 phút"
+        transportDuration: evt.transportDuration || "15 phút",
+        bookingLink: evt.bookingLink || `https://www.klook.com/vi/search?query=${encodeURIComponent(evt.locationName || "")}`,
+        notes: evt.notes || ""
       })) : []
     })) : []
   };
@@ -206,10 +210,13 @@ export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> =>
     Ghi chú thêm: ${prefs.prompt}
 
     HƯỚNG DẪN TỐC ĐỘ VÀ DỮ LIỆU:
-    1. Sử dụng Google Search CHỈ ĐỂ TRA CỨU: Thời tiết thực tế và Giá vé tham quan/máy bay mới nhất.
-    2. Với nhà hàng/quán cafe: Sử dụng kiến thức nội tại của bạn để gợi ý các quán ngon, nổi tiếng (Không cần search từng quán để tiết kiệm thời gian).
-    3. Ngôn ngữ output: TIẾNG VIỆT.
-    4. Cấu trúc ngày: Phải có đủ Sáng, Trưa, Chiều, Tối. Đừng để trống.
+    1. Sử dụng Google Search để lấy thông tin chính xác về: Thời tiết, Giá vé, và ĐỊA CHỈ CỤ THỂ.
+    2. ĐỊA CHỈ: Phải chi tiết (Số nhà, Đường, Phường/Xã, Quận/Huyện). Tránh ghi chung chung.
+    3. Với nhà hàng/quán cafe: Ưu tiên quán nổi tiếng có địa chỉ rõ ràng trên Google Maps.
+    4. BOOKING LINK: Tạo link search Klook cho các địa điểm tham quan/vé: "https://www.klook.com/vi/search?query={Tên địa điểm}".
+    5. NOTES: Thêm lưu ý quan trọng (Trang phục, giờ mở cửa, nên đi lúc nào vắng...).
+    6. Ngôn ngữ output: TIẾNG VIỆT.
+    7. Cấu trúc ngày: Phải có đủ Sáng, Trưa, Chiều, Tối. Đừng để trống.
 
     Cấu trúc JSON bắt buộc (Không kèm text dẫn chuyện):
     {
@@ -223,7 +230,8 @@ export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> =>
                 {
                     "id": "uuid", "time": "HH:mm", "activity": "Tên hoạt động",
                     "locationName": "Tên địa điểm", "address": "Địa chỉ", 
-                    "description": "Mô tả ngắn", "costEstimate": 0, "type": "activity/food/lodging"
+                    "description": "Mô tả ngắn", "costEstimate": 0, "type": "activity/food/lodging",
+                    "bookingLink": "https://www.klook.com/...", "notes": "Lưu ý..."
                 }
             ] 
           } 
