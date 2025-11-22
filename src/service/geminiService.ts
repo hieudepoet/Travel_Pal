@@ -1,30 +1,42 @@
 
 import { GoogleGenAI, Type, Schema, Chat, FunctionDeclaration } from "@google/genai";
-import { UserPreferences, TripPlan } from "../types/types";
+import { UserPreferences, TripPlan, UserPreferencesPartial } from "../types/types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_AGENT_API_KEY });
-const MODEL_NAME = "gemini-2.5-flash";
+// --- Configuration ---
+// Support multiple environment variable standards to ensure it works in NextJS, Vite, or CRA
+const apiKey = process.env.NEXT_PUBLIC_AGENT_API_KEY;
 
-// --- Schema Definitions (kept for tool calling) ---
+if (!apiKey) {
+  console.error("❌ API KEY MISSING: Please check your .env file and variable names.");
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || "" });
+const MODEL_NAME = "gemini-2.5-flash"; // Flash model is faster and cheaper
+
+// --- Global State for Chat Sessions ---
+// In a production app, these should be managed via React Context or Redux to support multiple tabs
+let tripChatSession: Chat | null = null;
+let onboardingChatSession: Chat | null = null;
+
+// --- Schemas ---
+
 const eventSchema: Schema = {
   type: Type.OBJECT,
   properties: {
-    id: { type: Type.STRING, description: "Unique UUID for the event" },
-    time: { type: Type.STRING, description: "Time of day (e.g., 09:00 AM)" },
-    activity: { type: Type.STRING, description: "Short title of activity" },
-    locationName: { type: Type.STRING, description: "Name of the place/venue" },
-    address: { type: Type.STRING, description: "Real, specific physical address for Google Maps navigation" },
-    phoneNumber: { type: Type.STRING, description: "Contact phone number (if applicable/available)" },
-    website: { type: Type.STRING, description: "Official website URL (if applicable)" },
-    description: { type: Type.STRING, description: "2 sentence description explaining why this place is chosen." },
-    costEstimate: { type: Type.NUMBER, description: "Estimated cost per person (numeric only)" },
-    currency: { type: Type.STRING, description: "Currency code (e.g., USD, VND)" },
-    transportMethod: { type: Type.STRING, description: "How to get here from previous location" },
-    transportDuration: { type: Type.STRING, description: "Estimated travel time" },
-    type: { type: Type.STRING, description: "One of: activity, food, lodging, transport" },
-    status: { type: Type.STRING, description: "Always set to 'accepted' initially" }
+    id: { type: Type.STRING },
+    time: { type: Type.STRING },
+    activity: { type: Type.STRING },
+    locationName: { type: Type.STRING },
+    address: { type: Type.STRING, description: "Address if known, otherwise leave generic" },
+    description: { type: Type.STRING },
+    costEstimate: { type: Type.NUMBER },
+    currency: { type: Type.STRING },
+    transportMethod: { type: Type.STRING },
+    transportDuration: { type: Type.STRING },
+    type: { type: Type.STRING, enum: ["activity", "food", "lodging", "transport"] },
+    status: { type: Type.STRING, enum: ["accepted", "rejected", "pending"] }
   },
-  required: ["id", "time", "activity", "locationName", "address", "costEstimate", "type"]
+  required: ["id", "time", "activity", "locationName", "costEstimate", "type"]
 };
 
 const daySchema: Schema = {
@@ -32,11 +44,8 @@ const daySchema: Schema = {
   properties: {
     day: { type: Type.INTEGER },
     date: { type: Type.STRING },
-    theme: { type: Type.STRING, description: "Theme of the day" },
-    events: {
-      type: Type.ARRAY,
-      items: eventSchema
-    }
+    theme: { type: Type.STRING },
+    events: { type: Type.ARRAY, items: eventSchema }
   },
   required: ["day", "events"]
 };
@@ -44,277 +53,338 @@ const daySchema: Schema = {
 const tripPlanSchema: Schema = {
   type: Type.OBJECT,
   properties: {
-    summary: { type: Type.STRING, description: "A short engaging summary of the trip" },
-    tips: { type: Type.STRING, description: "3 essential tips for this specific trip. Sentences separated by periods." },
+    summary: { type: Type.STRING },
+    tips: { type: Type.STRING },
     stats: {
       type: Type.OBJECT,
       properties: {
         totalCost: { type: Type.NUMBER },
         currency: { type: Type.STRING },
         totalEvents: { type: Type.INTEGER },
-        weatherSummary: { type: Type.STRING, description: "Expected weather forecast" },
+        weatherSummary: { type: Type.STRING },
         durationDays: { type: Type.INTEGER }
       },
       required: ["totalCost", "weatherSummary"]
     },
-    itinerary: {
-      type: Type.ARRAY,
-      items: daySchema
-    }
+    itinerary: { type: Type.ARRAY, items: daySchema }
   },
   required: ["summary", "itinerary", "stats"]
 };
 
-// --- Tool Definition for Updating Itinerary ---
+const userPrefsSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    destination: { type: Type.STRING },
+    startDate: { type: Type.STRING },
+    endDate: { type: Type.STRING },
+    adults: { type: Type.INTEGER },
+    children: { type: Type.INTEGER },
+    budget: { type: Type.STRING },
+    style: { type: Type.ARRAY, items: { type: Type.STRING } },
+    prompt: { type: Type.STRING }
+  }
+};
+
+// --- Tools ---
+
 const updateItineraryTool: FunctionDeclaration = {
-    name: "update_itinerary",
-    description: "Call this function ONLY when you need to modify, add, or remove events in the travel plan based on user request. Return the FULL updated trip plan.",
-    parameters: tripPlanSchema
+  name: "update_itinerary",
+  description: "Update the trip plan JSON. Call this when the user asks for changes.",
+  parameters: tripPlanSchema
 };
 
-let chatSession: Chat | null = null;
+const updateUserPrefsTool: FunctionDeclaration = {
+  name: "update_user_preferences",
+  description: "Extract user travel details during onboarding chat.",
+  parameters: userPrefsSchema
+};
+
+// --- Helper Functions ---
 
 /**
- * Helper to extract JSON from text that might contain markdown or grounding text.
+ * Robust JSON extraction that handles Markdown code blocks and raw text.
  */
-const extractJsonFromText = (text: string): TripPlan => {
-    try {
-        // Try standard parsing first
-        return JSON.parse(text);
-    } catch {
-        // Try finding markdown json blocks
-        const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch && jsonMatch[1]) {
-            try {
-                return JSON.parse(jsonMatch[1]);
-            } catch {
-                console.error("Failed to parse Markdown JSON");
-            }
-        }
-        // Try finding just the first brace structure
-        const firstBrace = text.indexOf('{');
-        const lastBrace = text.lastIndexOf('}');
-        if (firstBrace !== -1 && lastBrace !== -1) {
-            try {
-                return JSON.parse(text.substring(firstBrace, lastBrace + 1));
-            } catch {
-                console.error("Failed to parse brace JSON");
-            }
-        }
-        throw new Error("Could not parse JSON from model response");
+const extractJsonFromText = (text: string): any => {
+  try {
+    // 1. Try direct parse
+    return JSON.parse(text);
+  } catch (e) {
+    // 2. Try extracting from markdown ```json ... ```
+    const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch && jsonMatch[1]) {
+      try { return JSON.parse(jsonMatch[1]); } catch (e2) { }
     }
+
+    // 3. Try finding the first '{' and last '}'
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      try { return JSON.parse(text.substring(firstBrace, lastBrace + 1)); } catch (e3) { }
+    }
+
+    console.error("RAW TEXT FAILED TO PARSE:", text);
+    throw new Error("Could not parse JSON from AI response.");
+  }
 };
 
 /**
- * Generates the initial trip using Google Search Grounding.
+ * Ensures the TripPlan object has all required arrays and fields to prevent UI crashes.
+ */
+const sanitizePlan = (plan: any): TripPlan => {
+  if (!plan) throw new Error("Generated plan is null");
+  return {
+    summary: plan.summary || "Your Trip Plan",
+    tips: plan.tips || "Enjoy your trip!",
+    stats: {
+      totalCost: plan.stats?.totalCost || 0,
+      currency: plan.stats?.currency || "USD",
+      totalEvents: plan.stats?.totalEvents || 0,
+      weatherSummary: plan.stats?.weatherSummary || "Check forecast",
+      durationDays: plan.stats?.durationDays || 1
+    },
+    itinerary: Array.isArray(plan.itinerary) ? plan.itinerary.map((day: any) => ({
+      day: day.day,
+      date: day.date || "TBD",
+      theme: day.theme || "Exploration",
+      events: Array.isArray(day.events) ? day.events.map((evt: any) => ({
+        ...evt,
+        id: evt.id || Math.random().toString(36).substr(2, 9),
+        status: evt.status || 'accepted',
+        type: evt.type || 'activity',
+        costEstimate: evt.costEstimate || 0
+      })) : []
+    })) : []
+  };
+};
+
+// --- Core Logic ---
+
+/**
+ * 1. MANUAL GENERATION (FORM SUBMIT)
+ * Optimized for speed by restricting Google Search usage.
  */
 export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> => {
-  // Determine budget string logic
-  const budgetInstruction = prefs.exactBudget && prefs.exactBudget > 0
-    ? `STRICT TOTAL BUDGET: ${prefs.exactBudget} ${prefs.currency || 'USD'} for the ENTIRE party. You MUST try to keep the Total Cost below this number.`
-    : `Budget Preference: ${prefs.budget || "Moderate"}.`;
+  const budgetText = prefs.exactBudget && prefs.exactBudget > 0
+    ? `Strict Budget: ${prefs.exactBudget} ${prefs.currency}`
+    : `Budget Level: ${prefs.budget || "Moderate"}`;
 
+  const partyText = `${prefs.partySize.adults} Adults, ${prefs.partySize.children} Children`;
+
+  // PROMPT ENGINEERING FOR SPEED:
+  // We explicitly tell Gemini NOT to search for every single restaurant/cafe.
+  // It should only search for critical dynamic info (Weather, Ticket Prices).
   const prompt = `
-    Act as an expert travel agent. Plan a detailed trip to ${prefs.destination}.
-    Dates: ${prefs.startDate} to ${prefs.endDate}.
-    Travel Party: ${prefs.partySize.adults} Adults, ${prefs.partySize.children} Children.
-    Styles: ${prefs.style.join(", ")}.
-    User Note: ${prefs.prompt}.
-    ${budgetInstruction}
-    
-    TASK:
-    1. Use Google Search to find REAL-TIME weather, up-to-date ticket prices, and opening hours for ${prefs.destination}.
-    2. Select activities appropriate for ${prefs.partySize.children > 0 ? 'families with children' : 'adults'}.
-    3. Calculate estimated Total Cost for the WHOLE party (${prefs.partySize.adults + prefs.partySize.children} people) in ${prefs.currency || 'USD'}.
-    
-    OUTPUT FORMAT:
-    After gathering information, output the itinerary strictly as a JSON object.
-    The JSON must match this TypeScript interface:
-    
+    Act as an expert travel agent. Create a JSON itinerary for:
+    Destination: ${prefs.destination}
+    Dates: ${prefs.startDate} to ${prefs.endDate}
+    Party: ${partyText}
+    Style: ${prefs.style.join(", ")}
+    ${budgetText}
+    Notes: ${prefs.prompt}
+
+    SPEED INSTRUCTIONS:
+    1. Use Google Search ONLY for: Real-time weather forecast and major attraction ticket prices.
+    2. DO NOT use Google Search for every restaurant or cafe. Use your internal knowledge for food recommendations to save time.
+    3. Output STRICTLY JSON. Do not output conversational text.
+
+    JSON Structure Reference:
     {
-      summary: string;
-      tips: string;
-      stats: {
-        totalCost: number; // Total for everyone in ${prefs.currency || 'USD'}
-        currency: string; // Must be ${prefs.currency || 'USD'}
-        totalEvents: number;
-        weatherSummary: string;
-        durationDays: number;
-      },
-      itinerary: [
-        {
-          day: number,
-          date: string, // YYYY-MM-DD
-          theme: string,
-          events: [
-             {
-                id: string, // UUID
-                time: string,
-                activity: string,
-                locationName: string,
-                address: string, // REAL ADDRESS from Search
-                phoneNumber: string,
-                website: string,
-                description: string,
-                costEstimate: number, // Cost per person
-                currency: string,
-                transportMethod: string,
-                transportDuration: string,
-                type: "activity" | "food" | "lodging" | "transport",
-                status: "accepted"
-             }
-          ]
-        }
-      ]
+      "summary": "...",
+      "tips": "...",
+      "stats": { "totalCost": 0, "currency": "USD", "totalEvents": 0, "weatherSummary": "...", "durationDays": 0 },
+      "itinerary": [ { "day": 1, "date": "YYYY-MM-DD", "theme": "...", "events": [ ... ] } ]
     }
-    
-    Ensure the JSON is valid and contains no comments. Wrap it in \`\`\`json code blocks.
-  `;
+    `;
 
   try {
-    // We use tools: [{googleSearch: {}}] to get real data.
-    // We DO NOT use responseSchema here because it often conflicts with Search tools in the current API version.
-    // Instead we rely on the prompt to force JSON output.
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
-        tools: [{ googleSearch: {} }]
+        // Enable search, but relying on prompt to limit its usage
+        tools: [{ googleSearch: {} }],
+      }
+    });
+
+    if (!response.text) throw new Error("Empty response from AI");
+
+    const rawPlan = extractJsonFromText(response.text);
+    const plan = sanitizePlan(rawPlan);
+
+    // Initialize the Chat Session immediately after generation
+    // This fixes the "cannot chat" issue
+    tripChatSession = ai.chats.create({
+      model: MODEL_NAME,
+      config: {
+        systemInstruction: `You are a helpful travel assistant managing a trip to ${prefs.destination}.
+                When the user asks to change the plan (e.g., "Change dinner to sushi"), you MUST:
+                1. Call the 'update_itinerary' tool with the COMPLETE updated JSON.
+                2. Do not just describe the change in text.
+                3. Keep text responses short.`,
+        tools: [{ functionDeclarations: [updateItineraryTool] }, { googleSearch: {} }]
       },
+      history: [
+        { role: 'user', parts: [{ text: "I have just generated this trip plan. I am ready to review it." }] },
+        { role: 'model', parts: [{ text: "Great! I have the plan loaded. What would you like to change?" }] }
+      ]
     });
 
-    if (!response.text) throw new Error("No content generated");
-    
-    // Extract JSON from the potentially grounded response (which contains citations/text)
-    const initialPlan = extractJsonFromText(response.text) as TripPlan;
+    return plan;
 
-    // Initialize Chat Session
-    chatSession = ai.chats.create({
-        model: MODEL_NAME,
-        config: {
-            systemInstruction: `You are a smart travel assistant. 
-            Context: User is viewing a plan for ${prefs.partySize.adults} adults and ${prefs.partySize.children} children to ${prefs.destination}.
-            Goal: Refine the plan using 'update_itinerary'.
-            
-            Token Saving Rules:
-            1. Concise text responses.
-            2. Call 'update_itinerary' immediately for changes.
-            3. Only output text if asked a question.
-            
-            Data Rules:
-            1. Maintain valid JSON.
-            2. Use Google Search if the user asks for new real-time info (like "check if it's raining today").`,
-            tools: [{ functionDeclarations: [updateItineraryTool] }, { googleSearch: {} }]
-        },
-        history: [
-            { role: 'user', parts: [{ text: prompt }] },
-            { role: 'model', parts: [{ text: "Here is your initial plan." }] }
-        ]
-    });
-
-    return initialPlan;
   } catch (error) {
-    console.error("Trip generation failed:", error);
+    console.error("Generate Trip Error:", error);
     throw error;
   }
 };
 
 /**
- * Sends a message to the chatbot.
+ * 2. CHAT WITH PLAN (MODIFY TRIP)
+ * Handles tool calling loop correctly.
  */
-export const sendChatMessage = async (message: string): Promise<{ text: string, updatedPlan?: TripPlan }> => {
-    if (!chatSession) {
-        throw new Error("Chat session not initialized. Generate a trip first.");
-    }
+export const sendChatMessage = async (message: string, currentPlan: TripPlan): Promise<{ text: string, updatedPlan?: TripPlan }> => {
+  if (!tripChatSession) {
+    // Fallback: If session was lost (e.g. page refresh), try to recreate it roughly
+    console.warn("Chat session lost, recreating...");
+    tripChatSession = ai.chats.create({
+      model: MODEL_NAME,
+      config: { tools: [{ functionDeclarations: [updateItineraryTool] }, { googleSearch: {} }] }
+    });
+  }
 
-    try {
-        const response = await chatSession.sendMessage({ message });
-        
-        let responseText = response.text || "";
-        let updatedPlan: TripPlan | undefined;
+  try {
+    // 1. Send User Message
+    const result = await tripChatSession.sendMessage({ message });
 
-        // Check for function calls
-        const toolCalls = response.functionCalls;
-        if (toolCalls && toolCalls.length > 0) {
-            for (const call of toolCalls) {
-                if (call.name === 'update_itinerary') {
-                    updatedPlan = call.args as unknown as TripPlan;
-                    
-                    const toolResponse = await chatSession.sendMessage({
-                        message: [{
-                            functionResponse: {
-                                name: call.name,
-                                response: { result: "Itinerary updated successfully on client." },
-                                id: call.id
-                            }
-                        }]
-                    });
-                    
-                    if (toolResponse.text) {
-                        responseText = toolResponse.text;
-                    } else if (!responseText) {
-                        responseText = "I've updated your plan.";
-                    }
+    let responseText = result.text || "";
+    let updatedPlan: TripPlan | undefined;
+
+    // 2. Check for Tool Calls (The "Function Calling" Step)
+    const toolCalls = result.functionCalls;
+
+    if (toolCalls && toolCalls.length > 0) {
+      for (const call of toolCalls) {
+        if (call.name === 'update_itinerary') {
+          console.log("🛠️ AI is updating the itinerary...");
+
+          try {
+            const rawUpdated = call.args as unknown as TripPlan;
+            updatedPlan = sanitizePlan(rawUpdated); // Sanitize ensures no crash
+
+            // 3. Send Tool Response BACK to Gemini (Critical for chat loop)
+            // This tells the AI: "Tool executed successfully."
+            const toolResponse = await tripChatSession.sendMessage({
+              message: [{
+                functionResponse: {
+                  name: call.name,
+                  response: { result: "Itinerary updated successfully." },
+                  id: call.id
                 }
+              }]
+            });
+
+            // 4. Get final text response from AI after tool execution
+            if (toolResponse.text) {
+              responseText = toolResponse.text;
+            } else {
+              responseText = "I've updated your plan!";
             }
+
+          } catch (err) {
+            console.error("Error processing tool output:", err);
+            responseText = "I tried to update the plan, but something went wrong with the data format.";
+          }
         }
-
-        return { text: responseText, updatedPlan };
-
-    } catch (error) {
-        console.error("Chat failed", error);
-        return { text: "I'm sorry, I had trouble processing that request." };
+      }
     }
-}
+
+    return { text: responseText, updatedPlan };
+
+  } catch (error) {
+    console.error("Chat Error:", error);
+    return { text: "Sorry, I'm having trouble connecting to the AI right now." };
+  }
+};
 
 /**
- * Updates the trip by regenerating rejected events.
+ * 3. ONBOARDING CHAT (OPTIONAL FLOW)
+ * Collects user preferences conversationally.
  */
-export const updateTrip = async (rejectedIds: string[]): Promise<TripPlan> => {
-    if (!chatSession) {
-        throw new Error("Chat session not initialized. Generate a trip first.");
+export const startOnboardingChat = () => {
+  onboardingChatSession = ai.chats.create({
+    model: MODEL_NAME,
+    config: {
+      systemInstruction: `You are a travel consultant. Interview the user to plan a trip.
+            Ask ONE question at a time.
+            Goal: Collect Destination, Dates, Party Size, Budget, and Style.
+            Every time you get new info, call 'update_user_preferences'.
+            NEVER generate a full itinerary plan text. Just collect data.`,
+      tools: [{ functionDeclarations: [updateUserPrefsTool] }]
     }
+  });
+  return "Hi! I can help you plan a trip. Where do you want to go?";
+};
 
-    const prompt = `
-      The user has rejected events with IDs: ${rejectedIds.join(", ")}.
-      Replace them with new activities appropriate for the party size.
-      Use Google Search to ensure new places are open.
-      CRITICAL: Include specific Address, Price, and details.
-      Call 'update_itinerary'.
-    `;
+export const sendOnboardingMessage = async (message: string): Promise<{ text: string, extractedPrefs?: UserPreferencesPartial }> => {
+  if (!onboardingChatSession) startOnboardingChat();
 
-    try {
-        const response = await chatSession.sendMessage({ message: prompt });
-        let updatedPlan: TripPlan | undefined;
+  try {
+    const result = await onboardingChatSession!.sendMessage({ message });
+    let text = result.text || "";
+    let extractedPrefs: UserPreferencesPartial | undefined;
 
-        // Check for function calls
-        const toolCalls = response.functionCalls;
-        if (toolCalls && toolCalls.length > 0) {
-            for (const call of toolCalls) {
-                if (call.name === 'update_itinerary') {
-                    updatedPlan = call.args as unknown as TripPlan;
-                    
-                    await chatSession.sendMessage({
-                        message: [{
-                            functionResponse: {
-                                name: call.name,
-                                response: { result: "Itinerary updated successfully." },
-                                id: call.id
-                            }
-                        }]
-                    });
-                }
-            }
+    const toolCalls = result.functionCalls;
+    if (toolCalls) {
+      for (const call of toolCalls) {
+        if (call.name === 'update_user_preferences') {
+          const args = call.args as any;
+
+          extractedPrefs = {
+            destination: args.destination,
+            startDate: args.startDate,
+            endDate: args.endDate,
+            budget: args.budget,
+            prompt: args.prompt,
+            partySize: (args.adults || args.children) ? {
+              adults: args.adults,
+              children: args.children
+            } : undefined,
+            style: args.style
+          };
+
+          const toolResponse = await onboardingChatSession!.sendMessage({
+            message: [{
+              functionResponse: {
+                name: call.name,
+                response: { result: "Preferences saved." },
+                id: call.id
+              }
+            }]
+          });
+          if (toolResponse.text) text = toolResponse.text;
         }
-
-        if (!updatedPlan) {
-             throw new Error("AI did not provide an updated plan.");
-        }
-
-        return updatedPlan;
-
-    } catch (error) {
-        console.error("Update trip failed", error);
-        throw error;
+      }
     }
+    return { text, extractedPrefs };
+  } catch (e) {
+    console.error(e);
+    return { text: "I didn't catch that. Could you repeat?" };
+  }
+};
+
+/**
+ * 4. REGENERATE REJECTED EVENTS
+ */
+export const updateTrip = async (currentPlan: TripPlan, rejectedIds: string[]): Promise<TripPlan> => {
+  // Re-use the chat session to maintain context
+  if (!tripChatSession) throw new Error("Session missing");
+
+  const prompt = `The user rejected these event IDs: ${rejectedIds.join(", ")}. 
+    Please replace them with different activities/restaurants. 
+    Keep the rest of the plan the same. 
+    Call update_itinerary with the new JSON.`;
+
+  const { updatedPlan } = await sendChatMessage(prompt, currentPlan);
+  if (!updatedPlan) throw new Error("Failed to regenerate events");
+
+  return updatedPlan;
 };

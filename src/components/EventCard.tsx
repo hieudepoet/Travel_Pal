@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { ItineraryEvent } from '../types/types';
 import { MapPin, Wallet, Bus, X, RefreshCw, Phone, Globe, ExternalLink, UtensilsCrossed, Hotel, Camera } from 'lucide-react';
 import { generateGoogleCalendarLink } from '../utils/dateUtils';
@@ -51,9 +52,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
           <span style={{ ...typeColor, padding: '0.25rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '600', textTransform: 'capitalize', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'absolute', top: '10px', left: '10px' }}>
             <typeColor.icon className="w-4 h-4" />
           </span>
-          <img
+          <Image
             src={`https://picsum.photos/seed/${event.id}/200/200`}
             alt={event.activity}
+            width={200}
+            height={200}
             className={`w-full h-full object-cover transition-all ${isRejected ? 'grayscale' : ''}`}
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">

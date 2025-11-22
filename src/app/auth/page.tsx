@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { auth } from "../../../firebase/clientApp"
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth"
@@ -155,7 +156,7 @@ export default function AuthPage() {
         width: '100vw'
       }}>
         <div>
-          <img src="/images/logo_travelpal.png" alt="Logo" style={{ width: '300px', display: 'block', margin: '0 auto', position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)' }} />
+          <Image src="/images/logo_travelpal.png" alt="Logo" width={300} height={100} style={{ display: 'block', margin: '0 auto', position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)' }} />
         </div>
         <div className="wrapper">
           <div className="card-switch">
@@ -171,25 +172,31 @@ export default function AuthPage() {
               <div className="flip-card__inner">
                 <div className="flip-card__front">
                   <div style={{ position: 'relative' }}>
-                    <img
+                    <Image
                       src="/images/man_with_flag.png"
                       alt="Man with flag"
+                      width={250}
+                      height={250}
                       style={{
                         position: 'absolute',
                         right: '-230px',
                         top: '-50px',
                         width: '250px',
+                        height: 'auto',
                         zIndex: 1
                       }}
                     />
-                    <img
+                    <Image
                       src="/images/woman.png"
                       alt="Woman"
+                      width={120}
+                      height={120}
                       style={{
                         position: 'absolute',
                         left: '-102px',
                         top: '-50px',
                         width: '120px',
+                        height: 'auto',
                         zIndex: 1
                       }}
                     />
@@ -212,7 +219,7 @@ export default function AuthPage() {
                       Đăng nhập
                     </button>
                     <button className="flip-card__btn_google flex items-center justify-center transition-transform duration-200 hover:scale-102" type="button" onClick={handleGoogleSignIn}>
-                      <img src="/images/google_logo.svg" alt="Google" style={{ width: '20px', height: '20px', marginRight: '8px' }} />
+                      <Image src="/images/google_logo.svg" alt="Google" width={20} height={20} style={{ marginRight: '8px' }} />
                       Đăng nhập với Google
                     </button>
                   </form>
@@ -242,7 +249,7 @@ export default function AuthPage() {
                       Xác nhận
                     </button>
                     <button className="flip-card__btn_google flex items-center justify-center" type="button" onClick={handleGoogleSignIn}>
-                      <img src="/images/google_logo.svg" alt="Google" style={{ width: '20px', height: '20px', marginRight: '8px' }} />
+                      <Image src="/images/google_logo.svg" alt="Google" width={20} height={20} style={{ marginRight: '8px' }} />
                       Đăng ký với Google
                     </button>
                   </form>

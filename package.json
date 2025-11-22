@@ -13,6 +13,7 @@
     "@mantine/core": "^7.13.2",
     "@mantine/dates": "^7.17.8",
     "@mantine/hooks": "^7.13.2",
+    "@types/uuid": "^11.0.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
@@ -29,7 +30,8 @@
     "recharts": "^3.4.1",
     "styled-components": "^6.1.19",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
