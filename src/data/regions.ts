@@ -138,7 +138,34 @@ const ignoredProvinces = new Set(['hoangsa', 'truongsa'])
 const mapData = vietnamMap
 type SvgLocation = (typeof mapData.locations)[number]
 
-export const vietnamViewBox = mapData.viewBox
+// Calculate dynamic viewBox for the entire country based on filtered provinces
+const calculateVietnamViewBox = () => {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+  // We need to iterate over the filtered provinces. 
+  // Since 'provinces' is defined later, we'll do a preliminary pass or move this calculation after 'provinces' definition.
+  // However, 'provinces' depends on 'mapData', so we can iterate mapData.locations and filter same as 'provinces'.
+
+  mapData.locations.forEach(location => {
+    if (ignoredProvinces.has(location.id)) return;
+
+    const [pMinX, pMinY, pMaxX, pMaxY] = svgPathBounds(location.path);
+
+    minX = Math.min(minX, pMinX);
+    minY = Math.min(minY, pMinY);
+    maxX = Math.max(maxX, pMaxX);
+    maxY = Math.max(maxY, pMaxY);
+  });
+
+  const padding = 100; // General padding
+  const paddingTop = 10; // Reduced top padding to move map up
+  const width = maxX - minX;
+  const height = maxY - minY;
+
+  return `${minX - padding} ${minY - paddingTop} ${width + padding * 2} ${height + paddingTop + padding}`;
+};
+
+export const vietnamViewBox = calculateVietnamViewBox();
 
 export const PROVINCE_TO_REGION: Record<string, RegionId> = {}
 Object.entries(regionProvinceMap).forEach(([regionId, provinceIds]) => {
@@ -188,14 +215,16 @@ function computeRegionViewMeta(): Record<
     ]
   })
 
-  const padding = 24
+  const padding = 100 // General padding
+  const paddingTop = 120 // Increased top padding to move map down
+  const paddingBottom = 20 // Decreased bottom padding to maintain scale
   return Object.keys(base).reduce((acc, key) => {
     const regionId = key as RegionId
     const [minX, minY, maxX, maxY] = base[regionId]
     const width = maxX - minX
     const height = maxY - minY
     acc[regionId] = {
-      viewBox: `${minX - padding} ${minY - padding} ${width + padding * 2} ${height + padding * 2}`,
+      viewBox: `${minX - padding} ${minY - paddingTop} ${width + padding * 2} ${height + paddingTop + paddingBottom}`,
       centroid: [(minX + maxX) / 2, (minY + maxY) / 2],
     }
     return acc
@@ -392,7 +421,7 @@ export const regionCities: Record<RegionId, CityInfo[]> = {
       provinceId: 'hanam',
       population: '0.16M',
       summary: 'Transport hub at the gateway to Hanoi.',
-      highlight: 'Tam Chuc Pagoda complex nearby.',
+      highlight: 'Tam Chuc Pagoda complex.',
       mapQuery: '20.5411,105.9147',
     },
     {
@@ -790,4 +819,3 @@ export const regionCities: Record<RegionId, CityInfo[]> = {
     },
   ],
 }
-

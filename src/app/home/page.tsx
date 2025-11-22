@@ -8,12 +8,16 @@ import { Modal } from '@/components/Modal';
 import { UserPreferences, TripPlan } from '@/types/types';
 import { generateTrip } from '@/service/geminiService';
 import { Plane, Clock, MapPin, ArrowRight, Sparkles, Globe, Compass } from 'lucide-react';
+import GlobalPopupWrapper from '@/components/GlobalPopupWrapper';
+import VietnamMapWindow from '@/components/VietnamMapWindow';
+import { useMapPopup } from '@/contexts/MapPopupContext';
 
 const HomePage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [history, setHistory] = useState<{ id: string, destination: string, date: string, plan: TripPlan }[]>([]);
+  const { showMapPopup } = useMapPopup();
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('tripHistory');
@@ -459,6 +463,13 @@ const HomePage = () => {
           animation-delay: 4s;
         }
       `}</style>
+
+      {/* Map Popup */}
+      {showMapPopup && (
+        <GlobalPopupWrapper>
+          <VietnamMapWindow />
+        </GlobalPopupWrapper>
+      )}
     </div>
   );
 };

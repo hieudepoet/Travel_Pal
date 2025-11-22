@@ -13,6 +13,8 @@
     "@mantine/core": "^7.13.2",
     "@mantine/dates": "^7.17.8",
     "@mantine/hooks": "^7.13.2",
+    "@react-google-maps/api": "^2.20.7",
+    "@svg-maps/vietnam": "^2.0.0",
     "@types/uuid": "^11.0.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.8.0",
@@ -29,6 +31,7 @@
     "react-toastify": "^11.0.5",
     "recharts": "^3.4.1",
     "styled-components": "^6.1.19",
+    "svg-path-bounds": "^1.0.2",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^13.0.0"
