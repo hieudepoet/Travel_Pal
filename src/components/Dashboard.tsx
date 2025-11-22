@@ -20,28 +20,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
             icon={<DollarSign className="w-full h-full" style={{ color: "green" }} />}
             label="Ước tính chi phí"
             value={`${stats.totalCost.toLocaleString()} ${stats.currency}`}
-            sub=""
             backgroundColor="#E8F5E9" // Light Green
           />
           <StatCard
             icon={<CalendarClock className="w-full h-full" style={{ color: "purple" }} />}
             label="Thời gian"
             value={`${stats.durationDays} Days`}
-            sub=""
             backgroundColor="#F3E5F5" // Light Purple
           />
           <StatCard
             icon={<MapPin className="w-full h-full" style={{ color: "red" }} />}
             label="Số địa điểm"
             value={stats.totalEvents.toString()}
-            sub=""
             backgroundColor="#FFEBEE" // Light Red
           />
           <StatCard
             icon={<CloudSun className="w-full h-full" style={{ color: "orange" }} />}
             label="Thời tiết"
             value={stats.weatherSummary}
-            sub=""
             backgroundColor="#FFF3E0" // Light Orange
           />
         </div>
@@ -67,11 +63,11 @@ interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: string;
-  bgColor: string;
+  backgroundColor: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, bgColor }) => (
-  <div className={`${bgColor} rounded-lg p-3 flex items-center gap-3`}>
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor }) => (
+  <div className="rounded-lg p-3 flex items-center gap-3" style={{ backgroundColor }}>
     <div className="bg-white p-2 rounded-full shadow-sm">
       {icon}
     </div>

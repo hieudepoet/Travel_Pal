@@ -8,16 +8,6 @@ import { Roboto } from 'next/font/google'
 
 const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
 
-// Dynamically import TravelPlanner to avoid compilation during auth checks
-const TravelPlanner = dynamic(() => import('../../components/TravelPlanner'), {
-  loading: () => (
-    <div className="flex h-screen items-center justify-center">
-      <Loading />
-    </div>
-  ),
-  ssr: false
-})
-
 export default function HomeLayout({
   children,
 }: {
@@ -25,14 +15,7 @@ export default function HomeLayout({
 }) {
   return (
     <AuthGuard requireAuth={true}>
-      <div className={`${roboto.className} flex h-screen`}>
-        <main className="w-[70%] h-full overflow-hidden">
-          {children}
-        </main>
-        <div className="w-[30%] h-full overflow-hidden">
-          <TravelPlanner />
-        </div>
-      </div>
+    {children}
     </AuthGuard>
   )
 }
