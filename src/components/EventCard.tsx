@@ -46,7 +46,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
       <div className="flex gap-3">
         {/* Image */}
         <div 
-          className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer group relative"
+          className="w-[150px] h-[150px] flex-shrink-0 rounded-lg overflow-hidden cursor-pointer group relative"
           onClick={openMap}
         >
           <img
