@@ -9,17 +9,7 @@ interface DashboardProps {
   tips: string;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
 export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
-  // Mock data for the chart based on stats (simplification for viz)
-  const chartData = [
-    { name: 'Activities', value: stats.totalCost * 0.4 },
-    { name: 'Food', value: stats.totalCost * 0.3 },
-    { name: 'Transport', value: stats.totalCost * 0.1 },
-    { name: 'Lodging', value: stats.totalCost * 0.2 },
-  ];
-
   return (
     // Applied styles from TravelPlanner
     <div className="flex flex-row gap-[20px]">
@@ -73,15 +63,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
   );
 };
 
-const StatCard = ({ icon, label, value, sub, backgroundColor }: { icon: React.ReactNode, label: string, value: string, sub: string, backgroundColor?: string }) => (
-  <div className="p-[10px] flex items-center gap-[10px]" style={{ backgroundColor: backgroundColor || '#F9FAFB', borderRadius: "20px" }}>
-    <div className="p-[5px] w-[30px] h-[30px] flex items-center justify-center" style={{ backgroundColor: "white", borderRadius: "50%", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)" }}>
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  bgColor: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, bgColor }) => (
+  <div className={`${bgColor} rounded-lg p-3 flex items-center gap-3`}>
+    <div className="bg-white p-2 rounded-full shadow-sm">
       {icon}
     </div>
-    <div className="flex flex-col gap-[4px]">
-      <p className="text-[12px] font-medium uppercase" style={{ color: "gray", margin: "0" }}>{label}</p>
-      <p className="text-[16px] truncate max-w-[120px]" style={{ color: "black", fontWeight: "bold", margin: "0" }} title={value}>{value}</p>
-      <p className="text-[12px] truncate max-w-[120px]" style={{ color: "gray", margin: "0" }} title={sub}>{sub}</p>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-medium text-gray-500 uppercase">{label}</p>
+      <p className="text-sm font-bold text-gray-900 truncate" title={value}>{value}</p>
     </div>
   </div>
 );

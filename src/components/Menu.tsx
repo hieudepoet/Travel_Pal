@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MenuIcon, User2, LogOut, Bot } from 'lucide-react';
+import { MenuIcon, User2, LogOut, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
 import Loading from './Loading';
@@ -71,6 +71,23 @@ const Menu = () => {
         </button>
         {!isMenuCollapsed && (
           <>
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-full text-white shadow hover:shadow-lg transition-all"
+              style={{
+                width: '48px',
+                height: '48px',
+                border: 'none',
+                background: 'linear-gradient(135deg, rgba(255,81,47,0.85) 0%, rgba(240,152,25,0.85) 100%)',
+                animation: 'slideInDown 0.3s ease-out',
+                cursor: 'pointer',
+              }}
+              aria-label="AI Travel Planner"
+              onClick={() => router.push('/ai-planner')}
+              title="AI Travel Planner"
+            >
+              <Sparkles strokeWidth={2} className="w-5 h-5" />
+            </button>
             <button
               type="button"
               className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"

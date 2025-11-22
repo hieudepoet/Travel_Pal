@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type, Schema, Chat, FunctionDeclaration } from "@google/genai";
-import { UserPreferences, TripPlan, TravelStyle } from "../types/types";
+import { UserPreferences, TripPlan } from "../types/types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_AGENT_API_KEY });
 const MODEL_NAME = "gemini-2.5-flash";
@@ -77,18 +77,18 @@ let chatSession: Chat | null = null;
 /**
  * Helper to extract JSON from text that might contain markdown or grounding text.
  */
-const extractJsonFromText = (text: string): any => {
+const extractJsonFromText = (text: string): TripPlan => {
     try {
         // Try standard parsing first
         return JSON.parse(text);
-    } catch (e) {
+    } catch {
         // Try finding markdown json blocks
         const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch && jsonMatch[1]) {
             try {
                 return JSON.parse(jsonMatch[1]);
-            } catch (e2) {
-                console.error("Failed to parse Markdown JSON", e2);
+            } catch {
+                console.error("Failed to parse Markdown JSON");
             }
         }
         // Try finding just the first brace structure
@@ -97,8 +97,8 @@ const extractJsonFromText = (text: string): any => {
         if (firstBrace !== -1 && lastBrace !== -1) {
             try {
                 return JSON.parse(text.substring(firstBrace, lastBrace + 1));
-            } catch (e3) {
-                console.error("Failed to parse brace JSON", e3);
+            } catch {
+                console.error("Failed to parse brace JSON");
             }
         }
         throw new Error("Could not parse JSON from model response");
@@ -222,7 +222,7 @@ export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> =>
 /**
  * Sends a message to the chatbot.
  */
-export const sendChatMessage = async (message: string, currentPlan: TripPlan): Promise<{ text: string, updatedPlan?: TripPlan }> => {
+export const sendChatMessage = async (message: string): Promise<{ text: string, updatedPlan?: TripPlan }> => {
     if (!chatSession) {
         throw new Error("Chat session not initialized. Generate a trip first.");
     }
@@ -270,7 +270,7 @@ export const sendChatMessage = async (message: string, currentPlan: TripPlan): P
 /**
  * Updates the trip by regenerating rejected events.
  */
-export const updateTrip = async (currentPlan: TripPlan, rejectedIds: string[]): Promise<TripPlan> => {
+export const updateTrip = async (rejectedIds: string[]): Promise<TripPlan> => {
     if (!chatSession) {
         throw new Error("Chat session not initialized. Generate a trip first.");
     }

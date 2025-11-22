@@ -30,7 +30,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
       return (
         <div className="flex flex-col items-center justify-center h-screen p-4 text-center">
           <h2 className="text-xl font-bold text-red-600 mb-2">Something went wrong</h2>
-          <p className="mb-4">We're having trouble loading the page. Please try refreshing.</p>
+          <p className="mb-4">We&apos;re having trouble loading the page. Please try refreshing.</p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
