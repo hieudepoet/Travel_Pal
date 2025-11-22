@@ -156,7 +156,7 @@ export default function AuthPage() {
         width: '100vw'
       }}>
         <div>
-          <Image src="/images/logo_travelpal.png" alt="Logo" width={300} height={100} style={{ display: 'block', margin: '0 auto', position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)' }} />
+          <Image src="/images/logo_travelpal.png" alt="Logo" width={350} height={150} style={{ display: 'block', margin: '0 auto', position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)' }} />
         </div>
         <div className="wrapper">
           <div className="card-switch">
