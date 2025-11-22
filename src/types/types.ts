@@ -17,6 +17,12 @@ export interface UserPreferences {
   style: TravelStyle[];
   prompt: string;
   budget?: string;
+  exactBudget?: number;
+  currency?: string;
+  partySize: {
+    adults: number;
+    children: number;
+  };
 }
 
 export interface ItineraryEvent {

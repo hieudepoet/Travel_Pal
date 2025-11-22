@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MenuIcon, User2, LogOut, Bot } from 'lucide-react';
+import { MenuIcon, User2, LogOut, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
 import Loading from './Loading';
@@ -13,8 +13,6 @@ const tabItems = [
 ];
 
 const Menu = () => {
-  const [activeTab, setActiveTab] = useState(tabItems[0].value);
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
@@ -33,94 +31,64 @@ const Menu = () => {
 
   return (
     <div
-      className="absolute z-20 inline-flex items-center"
-      style={{ right: '20px', top: '20px', gap: '5px' }}
+      className="absolute z-20 flex flex-row items-center gap-[10px] px-[8px] py-[8px] bg-white/90 backdrop-blur-md rounded-full shadow-lg transition-all hover:shadow-xl"
+      style={{ right: '20px', top: '20px' }}
     >
+
       {/* Radar icon button */}
-      {!isMenuCollapsed && (
+      <button
+        type="button"
+        className="flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors p-[4px]"
+        style={{
+          border: 'none',
+          cursor: 'pointer',
+          display: 'none'
+        }}
+        aria-label="Chọn vị trí mặc định"
+      >
+        <img
+          src="/images/my_location.svg"
+          alt="Định vị"
+          className="h-[30px] w-[30px]"
+        />
+      </button>
+
+      <div className="w-px h-6 bg-gray-200 mx-1"></div>
+
+      {/* User */}
+      <button
+        type="button"
+        className="flex items-center justify-center rounded-full text-gray-700 hover:text-[#ff7c2a] hover:bg-gray-100 transition-colors p-[4px]"
+        style={{
+          border: 'none',
+          cursor: 'pointer',
+          display: 'none'
+        }}
+        aria-label="Tài khoản"
+      >
+        <User2 strokeWidth={2} className="h-[30px] w-[30px]" />
+      </button>
+
+      {/* Logout */}
+      {isLoggingOut ? (
+        <div className="flex items-center justify-center p-2">
+          <Loading />
+        </div>
+      ) : (
         <button
           type="button"
-          className="flex self-start h-12 w-12 items-center justify-center rounded-full shadow-sm transition hover:shadow-md"
+          className="flex items-center justify-center rounded-full text-gray-700 hover:text-red-500 hover:bg-red-50 transition-colors p-[4px]"
           style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
             border: 'none',
-            animation: 'slideInLeft 0.3s ease-out',
             cursor: 'pointer',
           }}
-          aria-label="Chọn vị trí mặc định"
+          aria-label="Đăng xuất"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
         >
-          <img
-            src="/images/my_location.svg"
-            alt="Định vị"
-            className="h-8 w-8"
-          />
+          <LogOut strokeWidth={2} className="h-[30px] w-[30px]" />
         </button>
       )}
-
-
-      {/* Vertical icon stack */}
-      <div className="flex flex-col" style={{ gap: '5px' }}>
-        <button
-          type="button"
-          className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-          style={{ width: '48px', height: '48px', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
-          aria-label="Menu chính"
-          onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
-        >
-          <MenuIcon strokeWidth={2} />
-        </button>
-        {!isMenuCollapsed && (
-          <>
-            <button
-              type="button"
-              className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-              style={{
-                width: '48px',
-                height: '48px',
-                border: 'none',
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                animation: 'slideInDown 0.3s ease-out',
-              }}
-              aria-label="Tài khoản"
-            >
-              <User2 strokeWidth={2} />
-            </button>
-            {isLoggingOut ? (
-              <div
-                className="flex items-center justify-center rounded-full"
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  border: 'none',
-                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                  animation: 'slideInDown 0.3s ease-out',
-                  cursor: 'pointer',
-                }}
-              >
-                <Loading />
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  border: 'none',
-                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                  animation: 'slideInDown 0.3s ease-out',
-                  cursor: 'pointer',
-                }}
-                aria-label="Đăng xuất"
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-              >
-                <LogOut strokeWidth={2} />
-              </button>
-            )}
-          </>
-        )}
-      </div>
     </div>
   );
 };
