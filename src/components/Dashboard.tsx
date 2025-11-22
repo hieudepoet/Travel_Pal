@@ -46,7 +46,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
         <h3 className="text-[18px] font-semibold text-gray-500 mb-[10px] tracking-wider">Gợi ý</h3>
         <div className="p-[5px]" style={{ backgroundColor: "#DBEAFE", borderRadius: "10px" }}>
           <ul className="" style={{ margin: "8px", padding: "0" }}>
-            {tips.split('. ').map((tip, idx) => (
+            {(typeof tips === 'string' ? tips : String(tips || '')).split('. ').map((tip, idx) => (
               tip && <li key={idx} className="flex items-start gap-[8px] text-sm mb-[8px]" style={{ color: "gray" }}>
                 <span className="inline-block w-[10px] h-[10px] mt-[5px] mr-[5px] flex-shrink-0" style={{ backgroundColor: "#0088FE", borderRadius: "50%" }}></span>
                 {tip}
@@ -68,11 +68,11 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor }) => {
   const isWeatherCard = label === "Thời tiết";
-  
+
   return (
-    <div 
-      className={`rounded-lg flex gap-3 p-3 ${isWeatherCard ? 'w-full' : 'w-[calc(50%-10px)]'}`} 
-      style={{ 
+    <div
+      className={`rounded-lg flex gap-3 p-3 ${isWeatherCard ? 'w-full' : 'w-[calc(50%-10px)]'}`}
+      style={{
         backgroundColor,
         boxSizing: 'border-box',
         minHeight: isWeatherCard ? 'auto' : '80px',
@@ -84,8 +84,8 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p 
-          className="text-sm font-semibold uppercase" 
+        <p
+          className="text-sm font-semibold uppercase"
           style={{
             margin: 0,
             lineHeight: '1.2',
@@ -97,7 +97,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor
         >
           {label}
         </p>
-        <p 
+        <p
           className="text-base font-bold text-gray-900 mt-1"
           style={{
             margin: 0,
