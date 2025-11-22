@@ -44,7 +44,7 @@ export default function PlanDisplay({
     ) || 0;
 
     return (
-        <div className="w-full p-[10px] h-full " style={{ background: '#FAF8F8', borderTop: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', padding: '2% 20%' }}>
+        <div className="w-full">
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 animate-pulse">
                     <AlertCircle className="w-5 h-5" />
@@ -71,7 +71,7 @@ export default function PlanDisplay({
 
                     {/* Action Bar for Regenerate */}
                     {rejectedCount > 0 && onRegenerate && (
-                        <div className="sticky top-20 z-20 mb-6 !bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-amber-200 flex items-center justify-between animate-slide-in">
+                        <div className="sticky top-20 z-20 mb-6 bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-amber-200 flex items-center justify-between animate-slide-in">
                             <div className="flex items-center gap-2 text-amber-800 font-medium">
                                 <AlertCircle className="w-5 h-5" />
                                 <span>{rejectedCount}</span>
@@ -89,12 +89,12 @@ export default function PlanDisplay({
 
                     <div className="w-full flex flex-col gap-[30px] mt-[30px]">
                         {displayPlan.itinerary.map((day) => (
-                            <div key={day.day} className="w-full relative mr-[30px]">
-                                <div className=" flex items-center gap-4 mb-[10px]">
-                                    <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: '#FDB88F', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold' }}>
+                            <div key={day.day} className="w-full relative">
+                                <div className="flex items-center gap-4 mb-[10px]">
+                                    <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: 'linear-gradient(135deg, #FDB88F 0%, #FF8A5B 100%)', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold', boxShadow: '0 2px 8px rgba(253, 184, 143, 0.3)' }}>
                                         Ngày {day.day}
                                     </div>
-                                    <h3 className="px-[8px] py-[2px] text-[16px]" style={{ background: 'white', borderRadius: '5px', color: 'black', fontWeight: 'semibold', border: '1px solid #C4C4C4' }}>
+                                    <h3 className="px-[8px] py-[2px] text-[16px]" style={{ background: 'white', borderRadius: '5px', color: 'black', fontWeight: 'semibold', border: '1px solid #E5E7EB', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                                         {day.date}
                                     </h3>
                                 </div>
