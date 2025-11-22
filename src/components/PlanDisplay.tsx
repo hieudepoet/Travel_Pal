@@ -44,7 +44,7 @@ export default function PlanDisplay({
     ) || 0;
 
     return (
-        <div className="w-full p-[10px] h-full " style={{ background: '#FAF8F8', borderTop: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', padding: '2% 20%' }}>
+        <div className="w-full p-[10px] h-full " style={{ background: '#FAF8F8', borderTop: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', padding: '2% 10%' }}>
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 animate-pulse">
                     <AlertCircle className="w-5 h-5" />
@@ -87,7 +87,7 @@ export default function PlanDisplay({
                         </div>
                     )}
 
-                    <div className="w-full flex flex-col gap-[30px] mt-[30px]">
+                    <div className="w-full flex flex-col gap-[30px] mt-[30px]" style={{ padding:'0 8%'}}>
                         {displayPlan.itinerary.map((day) => (
                             <div key={day.day} className="w-full relative mr-[30px]">
                                 <div className=" flex items-center gap-4 mb-[10px]">
