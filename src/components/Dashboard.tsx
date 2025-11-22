@@ -14,8 +14,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
     // Applied styles from TravelPlanner
     <div className="flex flex-row gap-[20px]">
       <div className="w-full">
-        <h2 className="text-[18px] font-bold !text-gray-800 mb-6">Tổng quan</h2>
-        <div className="grid grid-cols-2 gap-[8px] mb-8" >
+        <h2 className="text-[18px] font-bold !text-gray-800 mb-[10px]">Tổng quan</h2>
+        <div className="grid grid-cols-2 gap-[10px] mb-[10px]" >
           <StatCard
             icon={<DollarSign className="w-full h-full" style={{ color: "green" }} />}
             label="Ước tính chi phí"
@@ -43,7 +43,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
         </div>
       </div>
       <div className="w-full">
-        <h3 className="text-[18px] font-semibold text-gray-500 mb-4 tracking-wider">Gợi ý</h3>
+        <h3 className="text-[18px] font-semibold text-gray-500 mb-[10px] tracking-wider">Gợi ý</h3>
         <div className="p-[5px]" style={{ backgroundColor: "#DBEAFE", borderRadius: "10px" }}>
           <ul className="" style={{ margin: "8px", padding: "0" }}>
             {tips.split('. ').map((tip, idx) => (
@@ -67,7 +67,7 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor }) => (
-  <div className="rounded-lg p-3 flex items-center gap-3" style={{ backgroundColor }}>
+  <div className="rounded-lg flex items-center gap-[10px]" style={{ backgroundColor, padding: '12px', borderRadius: '10px' }}>
     <div className="bg-white p-2 rounded-full shadow-sm">
       {icon}
     </div>

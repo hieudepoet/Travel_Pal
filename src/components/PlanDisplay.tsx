@@ -44,7 +44,7 @@ export default function PlanDisplay({
     ) || 0;
 
     return (
-        <div className="w-full p-[10px] h-full " style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: "20px" }}>
+        <div className="w-full p-[10px] h-full " style={{ background: '#FAF8F8', borderTop: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', padding: '2% 20%' }}>
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 animate-pulse">
                     <AlertCircle className="w-5 h-5" />
@@ -60,7 +60,7 @@ export default function PlanDisplay({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                     </div>
-                    <p className="text-gray-500 text-lg">Hãy điền các yêu cầu trên để bắt đầu</p>
+                    <p className="text-gray-500 text-lg"></p>
                 </div>
             ) : (
                 <div className="w-full animate-fade-in">
@@ -74,7 +74,7 @@ export default function PlanDisplay({
                         <div className="sticky top-20 z-20 mb-6 !bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-amber-200 flex items-center justify-between animate-slide-in">
                             <div className="flex items-center gap-2 text-amber-800 font-medium">
                                 <AlertCircle className="w-5 h-5" />
-                                <span>{rejectedCount} events rejected manually</span>
+                                <span>{rejectedCount}</span>
                             </div>
                             <button
                                 onClick={onRegenerate}
@@ -87,7 +87,7 @@ export default function PlanDisplay({
                         </div>
                     )}
 
-                    <div className="w-full flex flex-row">
+                    <div className="w-full flex flex-col">
                         {displayPlan.itinerary.map((day) => (
                             <div key={day.day} className="w-full relative mr-[30px]">
                                 <div className="sticky top-24 z-10 flex items-center gap-4 mb-4">
