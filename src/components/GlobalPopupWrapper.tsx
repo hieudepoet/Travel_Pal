@@ -12,24 +12,35 @@ export default function GlobalPopupWrapper({
 
   // Prevent scrolling on the body when the popup is open
   useEffect(() => {
-    console.log('🗺️ GlobalPopupWrapper MOUNTED!');
-    alert('Popup wrapper is rendering!');
     document.body.style.overflow = 'hidden';
     return () => {
-      console.log('🗺️ GlobalPopupWrapper UNMOUNTED');
       document.body.style.overflow = 'auto';
     };
   }, []);
 
   const handleClose = () => {
-    console.log('Close button clicked');
     setShowMapPopup(false);
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+      }}
+    >
       {/* The Popup Content */}
-      <div className="relative w-[70%] h-[70%] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
+      <div
+        className="relative w-[90%] h-[90%] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
+        style={{
+          backgroundColor: 'white',
+        }}
+      >
 
         {/* Header / Close Button */}
         <div className="absolute top-4 left-4 z-[10000]">

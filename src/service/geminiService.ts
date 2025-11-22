@@ -2,22 +2,23 @@
 import { GoogleGenAI, Type, Schema, Chat, FunctionDeclaration } from "@google/genai";
 import { UserPreferences, TripPlan, UserPreferencesPartial } from "../types/types";
 
-// --- Cấu hình ---
-// Hỗ trợ nhiều biến môi trường để chạy trên NextJS, Vite, hoặc CRA
+// --- Configuration ---
+// Support multiple environment variable standards to ensure it works in NextJS, Vite, or CRA
 const apiKey = process.env.NEXT_PUBLIC_AGENT_API_KEY;
 
 if (!apiKey) {
-  console.error("❌ THIẾU API KEY: Vui lòng kiểm tra file .env");
+  console.error("❌ API KEY MISSING: Please check your .env file and variable names.");
 }
 
 const ai = new GoogleGenAI({ apiKey: apiKey || "" });
-const MODEL_NAME = "gemini-2.5-flash";
+const MODEL_NAME = "gemini-2.5-flash"; // Flash model is faster and cheaper
 
-// --- Trạng thái toàn cục ---
+// --- Global State for Chat Sessions ---
+// In a production app, these should be managed via React Context or Redux to support multiple tabs
 let tripChatSession: Chat | null = null;
 let onboardingChatSession: Chat | null = null;
 
-// --- Định nghĩa Schema (Cấu trúc dữ liệu) ---
+// --- Schemas ---
 
 const eventSchema: Schema = {
   type: Type.OBJECT,
@@ -26,7 +27,7 @@ const eventSchema: Schema = {
     time: { type: Type.STRING },
     activity: { type: Type.STRING },
     locationName: { type: Type.STRING },
-    address: { type: Type.STRING, description: "Địa chỉ cụ thể nếu biết, nếu không để chung chung" },
+    address: { type: Type.STRING, description: "Address if known, otherwise leave generic" },
     description: { type: Type.STRING },
     costEstimate: { type: Type.NUMBER },
     currency: { type: Type.STRING },
@@ -84,150 +85,116 @@ const userPrefsSchema: Schema = {
   }
 };
 
-// --- Công cụ (Tools) ---
+// --- Tools ---
 
 const updateItineraryTool: FunctionDeclaration = {
   name: "update_itinerary",
-  description: "Cập nhật JSON kế hoạch du lịch. Gọi hàm này khi người dùng yêu cầu thay đổi.",
+  description: "Update the trip plan JSON. Call this when the user asks for changes.",
   parameters: tripPlanSchema
 };
 
 const updateUserPrefsTool: FunctionDeclaration = {
   name: "update_user_preferences",
-  description: "Trích xuất thông tin người dùng trong quá trình chat onboarding.",
+  description: "Extract user travel details during onboarding chat.",
   parameters: userPrefsSchema
 };
 
-// --- Hàm hỗ trợ ---
+// --- Helper Functions ---
 
 /**
- * Trích xuất JSON từ văn bản (xử lý cả markdown và text thường).
- * Đã thêm logic làm sạch JSON bẩn (comments, dấu phẩy thừa).
+ * Robust JSON extraction that handles Markdown code blocks and raw text.
  */
 const extractJsonFromText = (text: string): any => {
-  // Bước 1: Làm sạch cơ bản (Xóa comment style JS)
-  let cleanText = text.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-
   try {
-    return JSON.parse(cleanText);
+    // 1. Try direct parse
+    return JSON.parse(text);
   } catch (e) {
-    // Bước 2: Tìm block JSON trong markdown
-    const jsonMatch = cleanText.match(/```json\n([\s\S]*?)\n```/);
+    // 2. Try extracting from markdown ```json ... ```
+    const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
     if (jsonMatch && jsonMatch[1]) {
-      cleanText = jsonMatch[1];
-    } else {
-      // Bước 3: Tìm cặp ngoặc {} ngoài cùng
-      const firstBrace = cleanText.indexOf('{');
-      const lastBrace = cleanText.lastIndexOf('}');
-      if (firstBrace !== -1 && lastBrace !== -1) {
-        cleanText = cleanText.substring(firstBrace, lastBrace + 1);
-      }
+      try { return JSON.parse(jsonMatch[1]); } catch (e2) { }
     }
 
-    // Bước 4: Fix lỗi dấu phẩy thừa (Trailing commas) - nguyên nhân crash phổ biến
-    cleanText = cleanText.replace(/,\s*}/g, '}').replace(/,\s*]/g, ']');
-
-    try {
-      return JSON.parse(cleanText);
-    } catch (finalError) {
-      console.error("KHÔNG THỂ PARSE JSON:", text);
-      throw new Error("Lỗi phân tích dữ liệu từ AI.");
+    // 3. Try finding the first '{' and last '}'
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      try { return JSON.parse(text.substring(firstBrace, lastBrace + 1)); } catch (e3) { }
     }
+
+    console.error("RAW TEXT FAILED TO PARSE:", text);
+    throw new Error("Could not parse JSON from AI response.");
   }
 };
 
 /**
- * Đảm bảo Plan có đủ các trường cần thiết để không gây crash UI.
+ * Ensures the TripPlan object has all required arrays and fields to prevent UI crashes.
  */
 const sanitizePlan = (plan: any): TripPlan => {
-  if (!plan) throw new Error("Plan được tạo ra bị rỗng");
-
-  // Xử lý tips: chuyển mảng thành chuỗi nếu cần
-  let safeTips = "Chúc bạn có chuyến đi vui vẻ!";
-  if (plan.tips) {
-    if (Array.isArray(plan.tips)) {
-      safeTips = plan.tips.join(". ");
-    } else {
-      safeTips = String(plan.tips);
-    }
-  }
-
+  if (!plan) throw new Error("Generated plan is null");
   return {
-    summary: plan.summary || "Kế hoạch du lịch của bạn",
-    tips: safeTips,
+    summary: plan.summary || "Your Trip Plan",
+    tips: plan.tips || "Enjoy your trip!",
     stats: {
       totalCost: plan.stats?.totalCost || 0,
-      currency: plan.stats?.currency || "VND", // Mặc định VND cho bản Việt hóa
+      currency: plan.stats?.currency || "USD",
       totalEvents: plan.stats?.totalEvents || 0,
-      weatherSummary: plan.stats?.weatherSummary || "Xem dự báo thời tiết",
+      weatherSummary: plan.stats?.weatherSummary || "Check forecast",
       durationDays: plan.stats?.durationDays || 1
     },
     itinerary: Array.isArray(plan.itinerary) ? plan.itinerary.map((day: any) => ({
       day: day.day,
-      date: day.date || "Chưa xác định",
-      theme: day.theme || "Khám phá",
+      date: day.date || "TBD",
+      theme: day.theme || "Exploration",
       events: Array.isArray(day.events) ? day.events.map((evt: any) => ({
         ...evt,
         id: evt.id || Math.random().toString(36).substr(2, 9),
-        time: evt.time || "09:00", // Định dạng giờ 24h
-        locationName: evt.locationName || evt.location || evt.place || "Địa điểm chưa rõ",
-        address: evt.address || "",
+        time: evt.time || "09:00 AM", // Default time to prevent split error
+        locationName: evt.locationName || "Unknown Location", // Default location
         status: evt.status || 'accepted',
         type: evt.type || 'activity',
-        costEstimate: evt.costEstimate || 0,
-        transportMethod: evt.transportMethod || "Tự túc",
-        transportDuration: evt.transportDuration || "15 phút"
+        costEstimate: evt.costEstimate || 0
       })) : []
     })) : []
   };
 };
 
-// --- Logic Chính ---
+// --- Core Logic ---
 
 /**
- * 1. TẠO LỊCH TRÌNH (MANUAL GENERATION)
- * Sử dụng Google Search để lấy dữ liệu thật, Prompt tiếng Việt.
+ * 1. MANUAL GENERATION (FORM SUBMIT)
+ * Optimized for speed by restricting Google Search usage.
  */
 export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> => {
   const budgetText = prefs.exactBudget && prefs.exactBudget > 0
-    ? `Ngân sách cứng: ${prefs.exactBudget} ${prefs.currency}`
-    : `Mức ngân sách: ${prefs.budget || "Trung bình"}`;
+    ? `Strict Budget: ${prefs.exactBudget} ${prefs.currency}`
+    : `Budget Level: ${prefs.budget || "Moderate"}`;
 
-  const partyText = `${prefs.partySize.adults} Người lớn, ${prefs.partySize.children} Trẻ em`;
+  const partyText = `${prefs.partySize.adults} Adults, ${prefs.partySize.children} Children`;
 
-  // PROMPT TIẾNG VIỆT
+  // PROMPT ENGINEERING FOR SPEED:
+  // We explicitly tell Gemini NOT to search for every single restaurant/cafe.
+  // It should only search for critical dynamic info (Weather, Ticket Prices).
   const prompt = `
-    Đóng vai một chuyên gia du lịch am hiểu Việt Nam và Quốc tế. Hãy lập một kế hoạch du lịch chi tiết dạng JSON cho:
-    Điểm đến: ${prefs.destination}
-    Thời gian: ${prefs.startDate} đến ${prefs.endDate}
-    Đoàn: ${partyText}
-    Phong cách: ${prefs.style.join(", ")}
+    Act as an expert travel agent. Create a JSON itinerary for:
+    Destination: ${prefs.destination}
+    Dates: ${prefs.startDate} to ${prefs.endDate}
+    Party: ${partyText}
+    Style: ${prefs.style.join(", ")}
     ${budgetText}
-    Ghi chú thêm: ${prefs.prompt}
+    Notes: ${prefs.prompt}
 
-    HƯỚNG DẪN TỐC ĐỘ VÀ DỮ LIỆU:
-    1. Sử dụng Google Search CHỈ ĐỂ TRA CỨU: Thời tiết thực tế và Giá vé tham quan/máy bay mới nhất.
-    2. Với nhà hàng/quán cafe: Sử dụng kiến thức nội tại của bạn để gợi ý các quán ngon, nổi tiếng (Không cần search từng quán để tiết kiệm thời gian).
-    3. Ngôn ngữ output: TIẾNG VIỆT.
-    4. Cấu trúc ngày: Phải có đủ Sáng, Trưa, Chiều, Tối. Đừng để trống.
+    SPEED INSTRUCTIONS:
+    1. Use Google Search ONLY for: Real-time weather forecast and major attraction ticket prices.
+    2. DO NOT use Google Search for every restaurant or cafe. Use your internal knowledge for food recommendations to save time.
+    3. Output STRICTLY JSON. Do not output conversational text.
 
-    Cấu trúc JSON bắt buộc (Không kèm text dẫn chuyện):
+    JSON Structure Reference:
     {
-      "summary": "Tóm tắt hấp dẫn về chuyến đi...",
-      "tips": "3 lời khuyên quan trọng...",
-      "stats": { "totalCost": 0, "currency": "VND", "totalEvents": 0, "weatherSummary": "...", "durationDays": 0 },
-      "itinerary": [ 
-          { 
-            "day": 1, "date": "YYYY-MM-DD", "theme": "Chủ đề ngày", 
-            "events": [ 
-                {
-                    "id": "uuid", "time": "HH:mm", "activity": "Tên hoạt động",
-                    "locationName": "Tên địa điểm", "address": "Địa chỉ", 
-                    "description": "Mô tả ngắn", "costEstimate": 0, "type": "activity/food/lodging"
-                }
-            ] 
-          } 
-      ]
+      "summary": "...",
+      "tips": "...",
+      "stats": { "totalCost": 0, "currency": "USD", "totalEvents": 0, "weatherSummary": "...", "durationDays": 0 },
+      "itinerary": [ { "day": 1, "date": "YYYY-MM-DD", "theme": "...", "events": [ ... ] } ]
     }
     `;
 
@@ -236,114 +203,101 @@ export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> =>
       model: MODEL_NAME,
       contents: prompt,
       config: {
-        // Bật Google Search cho lần tạo đầu tiên để lấy dữ liệu nền chuẩn xác
+        // Enable search, but relying on prompt to limit its usage
         tools: [{ googleSearch: {} }],
       }
     });
 
-    if (!response.text) throw new Error("AI không trả về dữ liệu.");
+    if (!response.text) throw new Error("Empty response from AI");
 
     const rawPlan = extractJsonFromText(response.text);
     const plan = sanitizePlan(rawPlan);
 
-    // Khởi tạo Chat Session ngay sau khi tạo xong
-    // QUAN TRỌNG: Tắt googleSearch ở đây để tránh lỗi "Tool use with function calling is unsupported"
+    // Initialize the Chat Session immediately after generation
+    // FIXED: Removed googleSearch from tools here to prevent "Tool use with function calling is unsupported" error
     tripChatSession = ai.chats.create({
       model: MODEL_NAME,
       config: {
-        systemInstruction: `Bạn là trợ lý du lịch ảo thông minh.
-                
-                QUY TẮC CHỈNH SỬA KẾ HOẠCH (QUAN TRỌNG):
-                1. CHỈNH SỬA KHÔNG PHÁ HỦY: Khi user yêu cầu đổi 1 sự kiện, bạn PHẢI GIỮ NGUYÊN tất cả các sự kiện và ngày khác. Copy lại chúng y nguyên.
-                2. KHÔNG TÓM TẮT: Trả về JSON đầy đủ, không được cắt bớt.
-                3. Luôn gọi hàm 'update_itinerary' với JSON đầy đủ.
-                4. Sử dụng kiến thức nội tại để recommend (Không dùng Search trong lúc chat để phản hồi nhanh).
-                5. Giao tiếp bằng TIẾNG VIỆT.`,
+        systemInstruction: `You are a helpful travel assistant managing a trip to ${prefs.destination}.
+                When the user asks to change the plan (e.g., "Change dinner to sushi"), you MUST:
+                1. Call the 'update_itinerary' tool with the COMPLETE updated JSON.
+                2. Do not just describe the change in text.
+                3. Keep text responses short.
+                4. Use your internal knowledge for recommendations (Search is disabled for faster editing).`,
         tools: [{ functionDeclarations: [updateItineraryTool] }]
       },
       history: [
-        { role: 'user', parts: [{ text: "Đây là kế hoạch vừa tạo. Tôi đã sẵn sàng xem xét." }] },
-        { role: 'model', parts: [{ text: "Tuyệt vời! Kế hoạch đã sẵn sàng. Bạn có muốn thay đổi gì không?" }] }
+        { role: 'user', parts: [{ text: "I have just generated this trip plan. I am ready to review it." }] },
+        { role: 'model', parts: [{ text: "Great! I have the plan loaded. What would you like to change?" }] }
       ]
     });
 
     return plan;
 
   } catch (error) {
-    console.error("Lỗi tạo lịch trình:", error);
+    console.error("Generate Trip Error:", error);
     throw error;
   }
 };
 
 /**
- * 2. CHAT SỬA LỊCH TRÌNH (MODIFY TRIP)
- * Đã tắt Search để fix lỗi 400 và tăng tốc độ.
+ * 2. CHAT WITH PLAN (MODIFY TRIP)
+ * Handles tool calling loop correctly.
  */
 export const sendChatMessage = async (message: string, currentPlan: TripPlan): Promise<{ text: string, updatedPlan?: TripPlan }> => {
-  // Logic tái khởi tạo session nếu bị mất (F5 trang)
   if (!tripChatSession) {
-    console.warn("Session bị mất, đang khôi phục với ngữ cảnh hiện tại...");
+    // Fallback: If session was lost (e.g. page refresh), try to recreate it roughly
+    console.warn("Chat session lost, recreating...");
+    // FIXED: Removed googleSearch here as well
     tripChatSession = ai.chats.create({
       model: MODEL_NAME,
       config: {
-        systemInstruction: `Bạn là trợ lý du lịch. User đang xem một kế hoạch có sẵn.
-                Nhiệm vụ: Sửa đổi kế hoạch theo yêu cầu.
-                Quy tắc: Trả về FULL JSON, không cắt bớt. Giao tiếp Tiếng Việt.`,
         tools: [{ functionDeclarations: [updateItineraryTool] }]
-      },
-      history: [
-        { role: 'user', parts: [{ text: `Đây là dữ liệu JSON của kế hoạch hiện tại: ${JSON.stringify(currentPlan)}` }] },
-        { role: 'model', parts: [{ text: "Đã hiểu ngữ cảnh. Tôi sẵn sàng chỉnh sửa." }] }
-      ]
+      }
     });
   }
 
   try {
-    // 1. Gửi tin nhắn User
+    // 1. Send User Message
     const result = await tripChatSession.sendMessage({ message });
 
     let responseText = result.text || "";
     let updatedPlan: TripPlan | undefined;
 
-    // 2. Kiểm tra Function Calling
+    // 2. Check for Tool Calls (The "Function Calling" Step)
     const toolCalls = result.functionCalls;
 
     if (toolCalls && toolCalls.length > 0) {
       for (const call of toolCalls) {
         if (call.name === 'update_itinerary') {
-          console.log("🛠️ AI đang cập nhật lịch trình...");
+          console.log("🛠️ AI is updating the itinerary...");
 
           try {
             const rawUpdated = call.args as unknown as TripPlan;
+            updatedPlan = sanitizePlan(rawUpdated); // Sanitize ensures no crash
 
-            // Kiểm tra an toàn dữ liệu
-            if (!rawUpdated.itinerary || rawUpdated.itinerary.length === 0) {
-              throw new Error("AI trả về lịch trình rỗng.");
-            }
-
-            updatedPlan = sanitizePlan(rawUpdated);
-
-            // 3. Gửi kết quả Tool về lại cho AI (Bắt buộc để đóng vòng lặp chat)
+            // 3. Send Tool Response BACK to Gemini (Critical for chat loop)
+            // This tells the AI: "Tool executed successfully."
             const toolResponse = await tripChatSession.sendMessage({
               message: [{
                 functionResponse: {
                   name: call.name,
-                  response: { result: "Cập nhật thành công." },
+                  response: { result: "Itinerary updated successfully." },
                   id: call.id
                 }
               }]
             });
 
-            // 4. Lấy câu trả lời text cuối cùng
+            // 4. Get final text response from AI after tool execution
             if (toolResponse.text) {
               responseText = toolResponse.text;
             } else {
-              responseText = "Đã cập nhật kế hoạch theo ý bạn!";
+              responseText = "I've updated your plan!";
             }
 
           } catch (err) {
-            console.error("Lỗi xử lý tool output:", err);
-            responseText = "Tôi đã thử cập nhật nhưng gặp lỗi định dạng dữ liệu. Vui lòng thử lại câu lệnh đơn giản hơn.";
+            console.error("Error processing tool output:", err);
+            responseText = "I tried to update the plan, but something went wrong with the data format.";
           }
         }
       }
@@ -352,29 +306,28 @@ export const sendChatMessage = async (message: string, currentPlan: TripPlan): P
     return { text: responseText, updatedPlan };
 
   } catch (error) {
-    console.error("Lỗi Chat:", error);
-    return { text: "Xin lỗi, hiện tại tôi không thể kết nối với hệ thống AI." };
+    console.error("Chat Error:", error);
+    return { text: "Sorry, I'm having trouble connecting to the AI right now." };
   }
 };
 
 /**
- * 3. ONBOARDING CHAT (Hỏi thông tin ban đầu)
- * Tiếng Việt hóa.
+ * 3. ONBOARDING CHAT (OPTIONAL FLOW)
+ * Collects user preferences conversationally.
  */
 export const startOnboardingChat = () => {
   onboardingChatSession = ai.chats.create({
     model: MODEL_NAME,
     config: {
-      systemInstruction: `Bạn là nhân viên tư vấn du lịch. Hãy phỏng vấn người dùng để lên kế hoạch.
-            Hỏi TỪNG CÂU MỘT.
-            Mục tiêu thu thập: Điểm đến, Ngày đi/về, Số người, Ngân sách, Sở thích.
-            Mỗi khi có thông tin mới, hãy gọi hàm 'update_user_preferences'.
-            KHÔNG BAO GIỜ tự viết ra lịch trình text. Chỉ thu thập dữ liệu.
-            Ngôn ngữ: Tiếng Việt.`,
+      systemInstruction: `You are a travel consultant. Interview the user to plan a trip.
+            Ask ONE question at a time.
+            Goal: Collect Destination, Dates, Party Size, Budget, and Style.
+            Every time you get new info, call 'update_user_preferences'.
+            NEVER generate a full itinerary plan text. Just collect data.`,
       tools: [{ functionDeclarations: [updateUserPrefsTool] }]
     }
   });
-  return "Xin chào! Tôi là trợ lý du lịch AI. Bạn dự định đi đâu trong chuyến đi sắp tới?";
+  return "Hi! I can help you plan a trip. Where do you want to go?";
 };
 
 export const sendOnboardingMessage = async (message: string): Promise<{ text: string, extractedPrefs?: UserPreferencesPartial }> => {
@@ -408,7 +361,7 @@ export const sendOnboardingMessage = async (message: string): Promise<{ text: st
             message: [{
               functionResponse: {
                 name: call.name,
-                response: { result: "Đã lưu thông tin." },
+                response: { result: "Preferences saved." },
                 id: call.id
               }
             }]
@@ -420,22 +373,24 @@ export const sendOnboardingMessage = async (message: string): Promise<{ text: st
     return { text, extractedPrefs };
   } catch (e) {
     console.error(e);
-    return { text: "Xin lỗi, tôi chưa nghe rõ. Bạn nhắc lại được không?" };
+    return { text: "I didn't catch that. Could you repeat?" };
   }
 };
 
 /**
- * 4. TÁI TẠO CÁC SỰ KIỆN BỊ TỪ CHỐI
+ * 4. REGENERATE REJECTED EVENTS
  */
 export const updateTrip = async (currentPlan: TripPlan, rejectedIds: string[]): Promise<TripPlan> => {
-  if (!tripChatSession) throw new Error("Mất kết nối session");
+  // Re-use the chat session to maintain context
+  if (!tripChatSession) throw new Error("Session missing");
 
-  const prompt = `Người dùng đã từ chối các sự kiện có ID: ${rejectedIds.join(", ")}. 
-    Hãy thay thế chúng bằng các hoạt động/nhà hàng khác phù hợp hơn.
-    QUAN TRỌNG: Trả về JSON ĐẦY ĐỦ bao gồm cả những phần không đổi.`;
+  const prompt = `The user rejected these event IDs: ${rejectedIds.join(", ")}. 
+    Please replace them with different activities/restaurants. 
+    Keep the rest of the plan the same. 
+    Call update_itinerary with the new JSON.`;
 
   const { updatedPlan } = await sendChatMessage(prompt, currentPlan);
-  if (!updatedPlan) throw new Error("Không thể tái tạo sự kiện");
+  if (!updatedPlan) throw new Error("Failed to regenerate events");
 
   return updatedPlan;
 };

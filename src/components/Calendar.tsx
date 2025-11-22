@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type CSSProperties, useState } from "react";
+import { useMemo, type CSSProperties } from "react";
 import {
   DatePicker,
   type DatePickerType,
@@ -10,11 +10,7 @@ import {
   Text,
   createTheme,
   type MantineColorScheme,
-  Popover,
-  UnstyledButton,
-  Box,
 } from "@mantine/core";
-import { Calendar as CalendarIcon } from 'lucide-react';
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
 
@@ -73,33 +69,6 @@ const Calendar = ({
   className,
   style,
 }: CalendarProps) => {
-  const [opened, setOpened] = useState(false);
-
-  // Convert value to Date object if it's a string
-  const getDateValue = () => {
-    if (!value) return null;
-    if (value instanceof Date) return value;
-    if (Array.isArray(value)) return value[0];
-    return new Date(value);
-  };
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return 'Chọn ngày';
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
-  const handleDateChange = (date: any) => {
-    if (onChange) {
-      onChange(date);
-    }
-    if (type === 'default') {
-      setOpened(false);
-    }
-  };
   const memoizedTheme = useMemo(() => baseTheme, []);
   const containerClassName = ["flex flex-col gap-1", className]
     .filter(Boolean)
@@ -112,81 +81,34 @@ const Calendar = ({
   };
 
   return (
-    <MantineProvider theme={baseTheme} defaultColorScheme={colorScheme}>
-      <Popover
-        width="target"
-        position="bottom"
-        shadow="md"
-        opened={opened}
-        onChange={setOpened}
-      >
-        <Popover.Target>
-          <Box style={style} className={className}>
-            {label && (
-              <Text size="sm" fw={500} mb={4}>
-                {label}
-              </Text>
-            )}
-            {description && (
-              <Text size="xs" c="dimmed" mb={8}>
-                {description}
-              </Text>
-            )}
-            <UnstyledButton
-              onClick={() => setOpened((o) => !o)}
-              style={{
-                width: '100%',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '10px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                backgroundColor: 'white',
-                cursor: 'pointer',
-                '&:hover': {
-                  borderColor: '#9ca3af',
-                },
-              }}
-            >
-              <Text c={value ? undefined : 'dimmed'} style={{ fontSize: '14px' }}> 
-                {formatDate(getDateValue())}
-              </Text>
-              <CalendarIcon size={18} color="#6b7280" />
-            </UnstyledButton>
-          </Box>
-        </Popover.Target>
-        <Popover.Dropdown p={0} style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden' }}>
-          <div style={{ padding: '8px', backgroundColor: 'white' }}>
-            <DatePicker
-              type={type}
-              value={getDateValue()}
-              onChange={handleDateChange}
-              minDate={minDate}
-              maxDate={maxDate}
-              styles={{
-                ...pickerStyles,
-                calendarHeader: {
-                  backgroundColor: 'white',
-                },
-                month: {
-                  ...pickerStyles.month,
-                  backgroundColor: 'white',
-                },
-                day: {
-                  ...pickerStyles.day,
-                  '&[data-selected]': {
-                    backgroundColor: 'var(--mantine-color-orange-6)',
-                    '&:hover': {
-                      backgroundColor: 'var(--mantine-color-orange-7)',
-                    },
-                  },
-                },
-              }}
-            />
-          </div>
-        </Popover.Dropdown>
-      </Popover>
+    <MantineProvider theme={memoizedTheme} defaultColorScheme={colorScheme}>
+      <div className={containerClassName} style={mergedStyle}>
+        {label && (
+          <Text component="label" fw={600} size="sm">
+            {label}
+          </Text>
+        )}
+        {description && (
+          <Text size="xs" c="dimmed">
+            {description}
+          </Text>
+        )}
+        <DatePicker
+          type={type}
+          value={value as never}
+          onChange={(val: CalendarValue) => onChange?.(val)}
+          minDate={minDate}
+          maxDate={maxDate}
+          weekendDays={[0]}
+          allowDeselect
+          allowSingleDateInRange
+          classNames={{
+            month: "mantine-month",
+            day: "mantine-day",
+          }}
+          styles={pickerStyles}
+        />
+      </div>
     </MantineProvider>
   );
 };

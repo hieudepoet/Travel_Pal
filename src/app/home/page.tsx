@@ -19,11 +19,6 @@ const HomePage = () => {
   const [history, setHistory] = useState<{ id: string, destination: string, date: string, plan: TripPlan }[]>([]);
   const { showMapPopup } = useMapPopup();
 
-  // Debug map popup state
-  useEffect(() => {
-    console.log('Map popup state changed:', showMapPopup);
-  }, [showMapPopup]);
-
   useEffect(() => {
     const savedHistory = localStorage.getItem('tripHistory');
     if (savedHistory) {

@@ -242,7 +242,6 @@ export default function TripPage() {
                     </div>
                 </div>
 
-<<<<<<< Updated upstream
                 {/* Scrollable Plan Area */}
                 <div style={{
                     flex: '1 1 0%',
@@ -264,37 +263,6 @@ export default function TripPage() {
                             onRegenerate={handleRegenerate}
                             isRegenerating={isRegenerating}
                         />
-=======
-                {/* Tab Navigation */}
-                <div className="bg-white/60 backdrop-blur-md border-b border-gray-200/50 px-6 relative">
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setActiveTab('plan')}
-                            className={`px-6 py-3 text-sm font-semibold transition-all relative ${activeTab === 'plan'
-                                ? 'text-orange-600'
-                                : 'text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            <Calendar size={18} className="inline mr-2" />
-                            Lịch trình
-                            {activeTab === 'plan' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500"></div>
-                            )}
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('map')}
-                            className={`px-6 py-3 text-sm font-semibold transition-all relative ${activeTab === 'map'
-                                ? 'text-orange-600'
-                                : 'text-gray-600 hover:text-gray-900'
-                                }`}
-                        >
-                            <Map size={18} className="inline mr-2" />
-                            Bản đồ
-                            {activeTab === 'map' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-pink-500"></div>
-                            )}
-                        </button>
->>>>>>> Stashed changes
                     </div>
                 </div>
             </div>

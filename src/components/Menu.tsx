@@ -61,11 +61,7 @@ const Menu = () => {
       {/* Map button */}
       <button
         type="button"
-        onClick={() => {
-          console.log('Map button clicked!');
-          setShowMapPopup(true);
-          console.log('Called setShowMapPopup(true)');
-        }}
+        onClick={() => setShowMapPopup(true)}
         className="flex items-center justify-center rounded-full text-gray-700 hover:text-[#ff7c2a] hover:bg-gray-100 transition-colors p-[4px]"
         style={{
           border: 'none',
