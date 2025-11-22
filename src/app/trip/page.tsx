@@ -7,6 +7,7 @@ import { ChatWindow } from '@/components/ChatWindow';
 import { TripPlan, ChatMessage } from '@/types/types';
 import { sendChatMessage, updateTrip } from '@/service/geminiService';
 import { ArrowLeft, Share2, Download, Map, Sparkles } from 'lucide-react';
+import Menu from '@/components/Menu';
 
 export default function TripPage() {
     const router = useRouter();
@@ -116,6 +117,7 @@ export default function TripPage() {
 
     return (
         <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
+            <Menu />
             {/* Left Sidebar - Chat */}
             <div className="w-[400px] flex flex-col border-r border-gray-200 bg-white z-20 shadow-2xl">
                 <div className="p-5 border-b border-gray-100 flex items-center gap-4 bg-white/80 backdrop-blur-sm">

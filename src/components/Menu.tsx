@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { MenuIcon, User2, LogOut, Sparkles } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
 import Loading from './Loading';
 
@@ -16,6 +16,15 @@ const tabItems = [
 const Menu = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  const handleMapClick = () => {
+    if (pathname === '/map') {
+      router.back();
+    } else {
+      router.push('/map');
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -36,22 +45,26 @@ const Menu = () => {
       style={{ right: '20px', top: '20px' }}
     >
 
-      {/* Radar icon button */}
+      {/* Map toggle button */}
       <button
         type="button"
-        className="flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors p-[4px]"
+        className={`flex items-center justify-center rounded-full transition-all duration-200 p-[4px] ${pathname === '/map'
+            ? 'bg-orange-100 hover:bg-orange-200'
+            : 'hover:bg-gray-100'
+          } hover:scale-110 active:scale-95`}
         style={{
           border: 'none',
           cursor: 'pointer',
-          display: 'none'
         }}
-        aria-label="Chọn vị trí mặc định"
+        aria-label={pathname === '/map' ? 'Đóng bản đồ' : 'Mở bản đồ'}
+        onClick={handleMapClick}
       >
         <Image
           src="/images/my_location.svg"
           alt="Định vị"
           width={30}
           height={30}
+          className={pathname === '/map' ? 'opacity-100' : 'opacity-70'}
         />
       </button>
 

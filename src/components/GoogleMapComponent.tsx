@@ -92,7 +92,6 @@ export default function GoogleMapComponent({
                 mapZoom: REGION_CENTERS[activeRegion].zoom,
             };
         }
-
         // Priority 4: Custom center/zoom
         if (center) {
             return { mapCenter: center, mapZoom: zoom };
@@ -102,21 +101,16 @@ export default function GoogleMapComponent({
         return { mapCenter: defaultCenter, mapZoom: 6 };
     }, [showRoute, route, selectedCity, activeRegion, center, zoom]);
 
+    // Update map view when center/zoom changes
+    React.useEffect(() => {
+        if (map) {
+            map.panTo(mapCenter);
+            map.setZoom(mapZoom);
+        }
+    }, [map, mapCenter, mapZoom]);
+
     // Get markers from route if showing route
     const markers = showRoute && route ? route.stops : [];
-
-    // Create path for polyline (connecting lines between stops)
-    const path = showRoute && route
-        ? route.stops.map(stop => stop.latLng)
-        : [];
-
-    // Polyline options
-    const polylineOptions = {
-        strokeColor: '#ef4444',
-        strokeOpacity: 1,
-        strokeWeight: 4,
-        geodesic: true,
-    };
 
     return (
         <GoogleMap
@@ -132,48 +126,42 @@ export default function GoogleMapComponent({
                 fullscreenControl: true,
             }}
         >
-            {/* Route polyline */}
-            {showRoute && path.length > 1 && (
-                <Polyline
-                    path={path}
-                    options={polylineOptions}
-                />
-            )}
-
             {/* Markers for each stop */}
-            {markers.map((stop, index) => (
-                <Marker
-                    key={`${stop.name}-${index}`}
-                    position={stop.latLng}
-                    onClick={() => setSelectedMarker(index)}
-                    label={{
-                        text: `${index + 1}`,
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: '14px',
-                    }}
-                    icon={{
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 12,
-                        fillColor: '#ef4444',
-                        fillOpacity: 1,
-                        strokeColor: 'white',
-                        strokeWeight: 3,
-                    }}
-                >
-                    {selectedMarker === index && (
-                        <InfoWindow
-                            position={stop.latLng}
-                            onCloseClick={() => setSelectedMarker(null)}
-                        >
-                            <div className="p-2">
-                                <h3 className="font-bold text-sm">{stop.name}</h3>
-                                <p className="text-xs text-gray-600">{stop.city}</p>
-                            </div>
-                        </InfoWindow>
-                    )}
-                </Marker>
-            ))}
-        </GoogleMap>
+            {
+                markers.map((stop, index) => (
+                    <Marker
+                        key={`${stop.name}-${index}`}
+                        position={stop.latLng}
+                        onClick={() => setSelectedMarker(index)}
+                        label={{
+                            text: `${index + 1}`,
+                            color: 'white',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                        }}
+                        icon={{
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 12,
+                            fillColor: '#ef4444',
+                            fillOpacity: 1,
+                            strokeColor: 'white',
+                            strokeWeight: 3,
+                        }}
+                    >
+                        {selectedMarker === index && (
+                            <InfoWindow
+                                position={stop.latLng}
+                                onCloseClick={() => setSelectedMarker(null)}
+                            >
+                                <div className="p-2">
+                                    <h3 className="font-bold text-sm">{stop.name}</h3>
+                                    <p className="text-xs text-gray-600">{stop.city}</p>
+                                </div>
+                            </InfoWindow>
+                        )}
+                    </Marker>
+                ))
+            }
+        </GoogleMap >
     );
 }

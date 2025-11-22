@@ -1,6 +1,12 @@
 "use client";
 
 import React from 'react';
+import { AuthGuard } from '../../components/AuthGuard';
+import dynamic from 'next/dynamic';
+import Loading from '../../components/Loading';
+import { Roboto } from 'next/font/google'
+
+const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700'] })
 
 export default function HomeLayout({
   children,
@@ -8,10 +14,8 @@ export default function HomeLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-screen">
-      <main className="w-full h-full">
-        {children}
-      </main>
-    </div>
+    <AuthGuard requireAuth={true}>
+    {children}
+    </AuthGuard>
   )
 }
