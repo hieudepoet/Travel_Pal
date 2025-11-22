@@ -200,7 +200,7 @@ export default function TravelPlanner() {
         <div className="flex justify-center mb-6 rounded-lg p-4 pt-[10px] w-full h-auto" style={{ background: 'white' }}>
           <div className="relative w-[170px] h-[80px]">
             <Image
-              src="/images/logo.png"
+              src="/images/logo_travelpal.png"
               alt="LOGO"
               fill
               className="object-contain"

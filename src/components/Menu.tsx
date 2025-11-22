@@ -41,8 +41,8 @@ const Menu = () => {
         <button
           type="button"
           className="flex self-start h-12 w-12 items-center justify-center rounded-full shadow-sm transition hover:shadow-md"
-          style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.7)', 
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
             border: 'none',
             animation: 'slideInLeft 0.3s ease-out',
             cursor: 'pointer',
@@ -59,48 +59,47 @@ const Menu = () => {
 
       {/* Tab navigation */}
       {!isMenuCollapsed && (
-        <div 
-          className="flex self-start rounded-full px-2 py-1" 
-          style={{ 
-            gap: '5px', 
+        <div
+          className="flex self-start rounded-full px-2 py-1"
+          style={{
+            gap: '5px',
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
             height: '48px',
-            alignItems: 'center', 
-            justifyContent: 'center', 
+            alignItems: 'center',
+            justifyContent: 'center',
             padding: '0 10px',
             animation: 'slideInLeft 0.3s ease-out',
           }}
         >
-        {tabItems.map((tab) => {
-          const isActive = activeTab === tab.value;
-          return (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => setActiveTab(tab.value)}
-              className={`rounded-full px-4 py-2 text-[18px] transition ${
-                isActive ? 'text-white shadow' : 'text-[#d0d0d0] hover:text-[#ff9c48]'
-              }`}
-              style={{
-                padding: '5px 10px',
-                border: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 'fit-content',
-                cursor: 'pointer',
-                borderTop: isActive ? '1px solid #ffffff' : 'none',
-                background: isActive
-                  ? 'linear-gradient(135deg, rgba(255,81,47,0.85) 0%, rgba(240,152,25,0.85) 100%)'
-                  : 'none',
-                color: '#ffffff',
-              }}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
+          {tabItems.map((tab) => {
+            const isActive = activeTab === tab.value;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setActiveTab(tab.value)}
+                className={`rounded-full px-4 py-2 text-[18px] transition ${isActive ? 'text-white shadow' : 'text-[#d0d0d0] hover:text-[#ff9c48]'
+                  }`}
+                style={{
+                  padding: '5px 10px',
+                  border: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 'fit-content',
+                  cursor: 'pointer',
+                  borderTop: isActive ? '1px solid #ffffff' : 'none',
+                  background: isActive
+                    ? 'linear-gradient(135deg, rgba(255,81,47,0.85) 0%, rgba(240,152,25,0.85) 100%)'
+                    : 'none',
+                  color: '#ffffff',
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       )}
 
       {/* Vertical icon stack */}
@@ -108,7 +107,7 @@ const Menu = () => {
         <button
           type="button"
           className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-          style={{ width: '48px', height: '48px', border: 'none', cursor: 'pointer',backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
+          style={{ width: '48px', height: '48px', border: 'none', cursor: 'pointer', backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
           aria-label="Menu chính"
           onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
         >
@@ -119,26 +118,10 @@ const Menu = () => {
             <button
               type="button"
               className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-              style={{ 
-                width: '48px', 
-                height: '48px', 
-                border: 'none', 
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                animation: 'slideInDown 0.3s ease-out',
-                cursor: 'pointer',
-              }}
-              aria-label="AI Travel Planner"
-              onClick={() => router.push('/planner')}
-            >
-              <Bot strokeWidth={2} />
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-              style={{ 
-                width: '48px', 
-                height: '48px', 
-                border: 'none', 
+              style={{
+                width: '48px',
+                height: '48px',
+                border: 'none',
                 backgroundColor: 'rgba(255, 255, 255, 0.7)',
                 animation: 'slideInDown 0.3s ease-out',
               }}
@@ -147,27 +130,27 @@ const Menu = () => {
               <User2 strokeWidth={2} />
             </button>
             {isLoggingOut ? (
-              <div 
+              <div
                 className="flex items-center justify-center rounded-full"
-                style={{ 
-                  width: '48px', 
-                  height: '48px', 
-                  border: 'none', 
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  border: 'none',
                   backgroundColor: 'rgba(255, 255, 255, 0.7)',
                   animation: 'slideInDown 0.3s ease-out',
                   cursor: 'pointer',
                 }}
               >
-                <Loading/>
+                <Loading />
               </div>
             ) : (
               <button
                 type="button"
                 className="flex items-center justify-center rounded-full text-[#101010] shadow hover:text-[#ff7c2a]"
-                style={{ 
-                  width: '48px', 
-                  height: '48px', 
-                  border: 'none', 
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  border: 'none',
                   backgroundColor: 'rgba(255, 255, 255, 0.7)',
                   animation: 'slideInDown 0.3s ease-out',
                   cursor: 'pointer',

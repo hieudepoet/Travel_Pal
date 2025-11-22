@@ -18,12 +18,12 @@ export default function AuthPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const form = e.target as HTMLFormElement;
     const formData = extractFormData(form);
-    
+
     let errors;
-    
+
     if (isSignUp) {
       // Registration form validation
       const registerData = formData as RegisterFormData & { confirmPassword?: string };
@@ -33,7 +33,7 @@ export default function AuthPage() {
       const loginData = formData as LoginFormData;
       errors = validateLoginForm(loginData);
     }
-    
+
     if (errors.length > 0) {
       // Display validation errors
       errors.forEach(error => {
@@ -41,36 +41,36 @@ export default function AuthPage() {
       });
       return;
     }
-    
+
     // If validation passes, proceed with Firebase authentication
     try {
       if (isSignUp) {
         // Registration logic
         const registerData = formData as RegisterFormData & { confirmPassword?: string };
         console.log('Registering user with Firebase...');
-        
+
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           registerData.email,
           registerData.password
         );
-        
+
         console.log('Registration successful:', userCredential.user);
         toast.success('Đăng ký thành công!');
         // Navigate to home page after successful registration
         router.push('/home');
-        
+
       } else {
         // Login logic
         const loginData = formData as LoginFormData;
         console.log('Logging in user with Firebase...');
-        
+
         const userCredential = await signInWithEmailAndPassword(
           auth,
           loginData.email,
           loginData.password
         );
-        
+
         console.log('Login successful:', userCredential.user);
         toast.success('Đăng nhập thành công!');
         // Navigate to home page after successful login
@@ -78,10 +78,10 @@ export default function AuthPage() {
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
-      
+
       // Handle specific Firebase auth errors
       let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại!';
-      
+
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = 'Email đã được đăng ký';
       } else if (error.code === 'auth/invalid-credential') {
@@ -101,7 +101,7 @@ export default function AuthPage() {
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau!';
       }
-      
+
       toast.error(errorMessage);
     }
   };
@@ -119,7 +119,7 @@ export default function AuthPage() {
       console.error('Google sign-in error:', error);
       // Show error toast notification
       let errorMessage = '';
-      
+
       if (error.code === 'auth/cancelled-popup-request') {
         // User closed the popup, don't show an error
         return;
@@ -131,7 +131,7 @@ export default function AuthPage() {
       } else {
         errorMessage = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại!';
       }
-      
+
       if (errorMessage) {
         toast.error(errorMessage);
       }
@@ -140,11 +140,11 @@ export default function AuthPage() {
 
   return (
     <AuthGuard requireAuth={false}>
-      <div className={roboto.className} style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+      <div className={roboto.className} style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         minHeight: '100vh',
         backgroundImage: 'url("/images/background_auth.png")',
         backgroundSize: 'cover',
@@ -153,7 +153,7 @@ export default function AuthPage() {
         width: '100vw'
       }}>
         <div>
-          <img src="/images/logo.png" alt="Logo" style={{ width: '300px', display: 'block', margin: '0 auto', position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)'}} />
+          <img src="/images/logo_travelpal.png" alt="Logo" style={{ width: '300px', display: 'block', margin: '0 auto', position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)' }} />
         </div>
         <div className="wrapper">
           <div className="card-switch">
@@ -168,28 +168,28 @@ export default function AuthPage() {
               <span className="card-side"></span>
               <div className="flip-card__inner">
                 <div className="flip-card__front">
-                  <div style={{ position: 'relative'}}>
-                    <img 
-                      src="/images/man_with_flag.png" 
-                      alt="Man with flag" 
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src="/images/man_with_flag.png"
+                      alt="Man with flag"
                       style={{
                         position: 'absolute',
                         right: '-230px',
                         top: '-50px',
                         width: '250px',
                         zIndex: 1
-                      }} 
+                      }}
                     />
-                    <img 
-                      src="/images/woman.png" 
-                      alt="Woman" 
+                    <img
+                      src="/images/woman.png"
+                      alt="Woman"
                       style={{
                         position: 'absolute',
                         left: '-102px',
                         top: '-50px',
                         width: '120px',
                         zIndex: 1
-                      }} 
+                      }}
                     />
                   </div>
                   <div className="title">Đăng nhập</div>
