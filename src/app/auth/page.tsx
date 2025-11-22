@@ -76,29 +76,30 @@ export default function AuthPage() {
         // Navigate to home page after successful login
         router.push('/home');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Authentication error:', error);
+      const err = error as { code?: string };
 
       // Handle specific Firebase auth errors
       let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại!';
 
-      if (error.code === 'auth/email-already-in-use') {
+      if (err.code === 'auth/email-already-in-use') {
         errorMessage = 'Email đã được đăng ký';
-      } else if (error.code === 'auth/invalid-credential') {
+      } else if (err.code === 'auth/invalid-credential') {
         errorMessage = 'Bạn chưa đăng ký tài khoản';
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (err.code === 'auth/invalid-email') {
         errorMessage = 'Email không hợp lệ!';
-      } else if (error.code === 'auth/operation-not-allowed') {
+      } else if (err.code === 'auth/operation-not-allowed') {
         errorMessage = 'Đăng nhập bằng email/mật khẩu không được phép!';
-      } else if (error.code === 'auth/weak-password') {
+      } else if (err.code === 'auth/weak-password') {
         errorMessage = 'Mật khẩu quá yếu!';
-      } else if (error.code === 'auth/user-disabled') {
+      } else if (err.code === 'auth/user-disabled') {
         errorMessage = 'Tài khoản đã bị vô hiệu hóa!';
-      } else if (error.code === 'auth/user-not-found') {
+      } else if (err.code === 'auth/user-not-found') {
         errorMessage = 'Không tìm thấy tài khoản với email này!';
-      } else if (error.code === 'auth/wrong-password') {
+      } else if (err.code === 'auth/wrong-password') {
         errorMessage = 'Mật khẩu không đúng!';
-      } else if (error.code === 'auth/too-many-requests') {
+      } else if (err.code === 'auth/too-many-requests') {
         errorMessage = 'Quá nhiều lần thử. Vui lòng thử lại sau!';
       }
 
@@ -115,18 +116,19 @@ export default function AuthPage() {
       toast.success('Đăng nhập với Google thành công!');
       // Navigate to home page after successful Google sign-in
       router.push('/home');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Google sign-in error:', error);
+      const err = error as { code?: string };
       // Show error toast notification
       let errorMessage = '';
 
-      if (error.code === 'auth/cancelled-popup-request') {
+      if (err.code === 'auth/cancelled-popup-request') {
         // User closed the popup, don't show an error
         return;
-      } else if (error.code === 'auth/popup-closed-by-user') {
+      } else if (err.code === 'auth/popup-closed-by-user') {
         // User closed the popup, don't show an error
         return;
-      } else if (error.code === 'auth/popup-blocked') {
+      } else if (err.code === 'auth/popup-blocked') {
         errorMessage = 'Popup bị chặn. Vui lòng cho phép popup và thử lại!';
       } else {
         errorMessage = 'Đăng nhập bằng Google thất bại. Vui lòng thử lại!';

@@ -9,60 +9,46 @@ interface DashboardProps {
   tips: string;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
 export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
-  // Mock data for the chart based on stats (simplification for viz)
-  const chartData = [
-    { name: 'Activities', value: stats.totalCost * 0.4 },
-    { name: 'Food', value: stats.totalCost * 0.3 },
-    { name: 'Transport', value: stats.totalCost * 0.1 },
-    { name: 'Lodging', value: stats.totalCost * 0.2 },
-  ];
-
   return (
-    // Applied styles from TravelPlanner
-    <div className="w-full h-full">
-      <h2 className="text-[18px] font-bold !text-gray-800 mb-6">Tổng quan</h2>
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
+      <h2 className="text-xl font-bold text-gray-900 mb-4">Tổng quan</h2>
 
-      <div className="grid grid-cols-2 gap-[8px] mb-8" >
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <StatCard
-          icon={<DollarSign className="w-full h-full" style={{ color: "green" }} />}
-          label="Ước tính chi phí"
+          icon={<DollarSign className="w-5 h-5 text-green-600" />}
+          label="Chi phí"
           value={`${stats.totalCost.toLocaleString()} ${stats.currency}`}
-          sub=""
-          backgroundColor="#E8F5E9" // Light Green
+          bgColor="bg-green-50"
         />
         <StatCard
-          icon={<CalendarClock className="w-full h-full" style={{ color: "purple" }} />}
+          icon={<CalendarClock className="w-5 h-5 text-purple-600" />}
           label="Thời gian"
-          value={`${stats.durationDays} Days`}
-          sub=""
-          backgroundColor="#F3E5F5" // Light Purple
+          value={`${stats.durationDays} ngày`}
+          bgColor="bg-purple-50"
         />
         <StatCard
-          icon={<MapPin className="w-full h-full" style={{ color: "red" }} />}
-          label="Số địa điểm"
+          icon={<MapPin className="w-5 h-5 text-red-600" />}
+          label="Địa điểm"
           value={stats.totalEvents.toString()}
-          sub=""
-          backgroundColor="#FFEBEE" // Light Red
+          bgColor="bg-red-50"
         />
         <StatCard
-          icon={<CloudSun className="w-full h-full" style={{ color: "orange" }} />}
+          icon={<CloudSun className="w-5 h-5 text-orange-600" />}
           label="Thời tiết"
           value={stats.weatherSummary}
-          sub=""
-          backgroundColor="#FFF3E0" // Light Orange
+          bgColor="bg-orange-50"
         />
       </div>
-      <div className="">
-        <h3 className="text-[18px] font-semibold text-gray-500 mb-4 tracking-wider">Gợi ý</h3>
-        <div className="p-[5px]" style={{ backgroundColor: "#DBEAFE", borderRadius: "10px" }}>
-          <ul className="" style={{ margin: "8px", padding: "0" }}>
-            {tips.split('. ').map((tip, idx) => (
-              tip && <li key={idx} className="flex items-start gap-[8px] text-sm mb-[8px]" style={{color: "gray"}}>
-                <span className="inline-block w-[10px] h-[10px] mt-[5px] mr-[5px] flex-shrink-0" style={{ backgroundColor: "#0088FE", borderRadius: "50%" }}></span>
-                {tip}
+
+      <div>
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Gợi ý</h3>
+        <div className="bg-blue-50 rounded-lg p-4">
+          <ul className="space-y-2">
+            {tips.split('. ').filter(tip => tip.trim()).map((tip, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
+                <span className="inline-block w-2 h-2 mt-1.5 bg-blue-500 rounded-full flex-shrink-0"></span>
+                <span>{tip.trim()}{tip.endsWith('.') ? '' : '.'}</span>
               </li>
             ))}
           </ul>
@@ -72,15 +58,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
   );
 };
 
-const StatCard = ({ icon, label, value, sub, backgroundColor }: { icon: React.ReactNode, label: string, value: string, sub: string, backgroundColor?: string }) => (
-  <div className="p-[10px] flex items-center gap-[10px]" style={{ backgroundColor: backgroundColor || '#F9FAFB', borderRadius: "20px" }}>
-    <div className="p-[5px] w-[30px] h-[30px] flex items-center justify-center" style={{ backgroundColor: "white", borderRadius: "50%", boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)" }}>
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  bgColor: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, bgColor }) => (
+  <div className={`${bgColor} rounded-lg p-3 flex items-center gap-3`}>
+    <div className="bg-white p-2 rounded-full shadow-sm">
       {icon}
     </div>
-    <div className="flex flex-col gap-[4px]">
-      <p className="text-[12px] font-medium uppercase" style={{ color: "gray", margin: "0" }}>{label}</p>
-      <p className="text-[16px] truncate max-w-[120px]" style={{ color: "black", fontWeight: "bold", margin: "0" }} title={value}>{value}</p>
-      <p className="text-[12px] truncate max-w-[120px]" style={{ color: "gray", margin: "0" }} title={sub}>{sub}</p>
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-medium text-gray-500 uppercase">{label}</p>
+      <p className="text-sm font-bold text-gray-900 truncate" title={value}>{value}</p>
     </div>
   </div>
 );

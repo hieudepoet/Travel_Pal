@@ -12,17 +12,18 @@ const formatToGoogleCalendarDate = (dateStr: string, timeStr: string): string =>
     
     // Parse the time (Assume format is HH:MM AM/PM or HH:MM)
     const [time, modifier] = timeStr.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
+    const [hours, minutes] = time.split(':').map(Number);
+    let adjustedHours = hours;
     
     if (modifier) {
-        if (modifier.toLowerCase() === 'pm' && hours < 12) hours += 12;
-        if (modifier.toLowerCase() === 'am' && hours === 12) hours = 0;
+        if (modifier.toLowerCase() === 'pm' && adjustedHours < 12) adjustedHours += 12;
+        if (modifier.toLowerCase() === 'am' && adjustedHours === 12) adjustedHours = 0;
     }
 
-    date.setHours(hours, minutes, 0);
+    date.setHours(adjustedHours, minutes, 0);
 
     return date.toISOString().replace(/-|:|\.\d+/g, '');
-  } catch (e) {
+  } catch {
     // Fallback to just the date if parsing fails
     return new Date().toISOString().replace(/-|:|\.\d+/g, '');
   }
@@ -34,14 +35,15 @@ export const generateGoogleCalendarLink = (event: ItineraryEvent, dateStr: strin
   // Default to 1.5 hours duration
   // Re-do parsing to be safe for calculation
   const [time, modifier] = event.time.split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
+  let adjustedHours = hours;
   if (modifier) {
-      if (modifier.toLowerCase() === 'pm' && hours < 12) hours += 12;
-      if (modifier.toLowerCase() === 'am' && hours === 12) hours = 0;
+      if (modifier.toLowerCase() === 'pm' && adjustedHours < 12) adjustedHours += 12;
+      if (modifier.toLowerCase() === 'am' && adjustedHours === 12) adjustedHours = 0;
   }
   
   // Add 90 minutes
-  const endTimestamp = new Date(new Date(dateStr).setHours(hours, minutes + 90));
+  const endTimestamp = new Date(new Date(dateStr).setHours(adjustedHours, minutes + 90));
   const endTime = endTimestamp.toISOString().replace(/-|:|\.\d+/g, '');
 
   const location = event.address || event.locationName;

@@ -71,11 +71,11 @@ export const validateRegisterForm = (data: RegisterFormData & { confirmPassword?
 
 export const extractFormData = (form: HTMLFormElement): LoginFormData | RegisterFormData => {
   const formData = new FormData(form);
-  const data: any = {};
+  const data: Record<string, string> = {};
   
   for (const [key, value] of formData.entries()) {
     data[key] = value.toString().trim();
   }
   
-  return data;
+  return data as unknown as LoginFormData | RegisterFormData;
 };

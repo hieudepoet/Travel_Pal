@@ -97,7 +97,7 @@ export default function TravelPlanner() {
 
     setRegenerating(true);
     try {
-      const updatedPlan = await updateTrip(tripPlan, rejectedIds);
+      const updatedPlan = await updateTrip(rejectedIds);
       setTripPlan(updatedPlan);
     } catch (err) {
       setError("Failed to update itinerary. Please try again.");
