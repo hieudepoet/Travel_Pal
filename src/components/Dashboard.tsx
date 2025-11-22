@@ -17,25 +17,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
         <h2 className="text-[18px] font-bold !text-gray-800 mb-[10px]">Tổng quan</h2>
         <div className="grid grid-cols-2 gap-[10px] mb-[10px]" >
           <StatCard
-            icon={<DollarSign className="w-full h-full" style={{ color: "green" }} />}
+            icon={<DollarSign className="w-[20px] h-[20px]" style={{ color: "green" }} />}
             label="Ước tính chi phí"
             value={`${stats.totalCost.toLocaleString()} ${stats.currency}`}
             backgroundColor="#E8F5E9" // Light Green
           />
           <StatCard
-            icon={<CalendarClock className="w-full h-full" style={{ color: "purple" }} />}
+            icon={<CalendarClock className="w-[20px] h-[20px]" style={{ color: "purple" }} />}
             label="Thời gian"
-            value={`${stats.durationDays} Days`}
+            value={`${stats.durationDays} Ngày`}
             backgroundColor="#F3E5F5" // Light Purple
           />
           <StatCard
-            icon={<MapPin className="w-full h-full" style={{ color: "red" }} />}
+            icon={<MapPin className="w-[20px] h-[20px]" style={{ color: "red" }} />}
             label="Số địa điểm"
             value={stats.totalEvents.toString()}
             backgroundColor="#FFEBEE" // Light Red
           />
           <StatCard
-            icon={<CloudSun className="w-full h-full" style={{ color: "orange" }} />}
+            icon={<CloudSun className="w-[20px] h-[20px]" style={{ color: "orange" }} />}
             label="Thời tiết"
             value={stats.weatherSummary}
             backgroundColor="#FFF3E0" // Light Orange
@@ -72,8 +72,8 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor
       {icon}
     </div>
     <div className="flex-1 min-w-0">
-      <p className="text-xs font-medium text-gray-500 uppercase">{label}</p>
-      <p className="text-sm font-bold text-gray-900 truncate" title={value}>{value}</p>
+      <p className="text-[14px] uppercase" style={{ fontWeight: "semibold" }}>{label}</p>
+      <p className="text-[16px] font-bold text-gray-900 truncate" title={value}>{value}</p>
     </div>
   </div>
 );
