@@ -4,10 +4,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Calendar, { CalendarValue } from './Calendar';
 import Button from './Button';
-import PlanDisplay from './PlanDisplay';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { generateTrip, updateTrip } from '../service/geminiService';
 import { UserPreferences, TripPlan } from '../types/types';
+import ChatBox from './Chat_box';
 
 export default function TravelPlanner() {
   const [startDate, setStartDate] = useState('');
@@ -18,6 +18,7 @@ export default function TravelPlanner() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   const handleGeneratePlan = async () => {
     if (!startDate || !endDate) {
@@ -32,6 +33,7 @@ export default function TravelPlanner() {
 
     try {
       setIsLoading(true);
+      setHasGenerated(true);
       setError(null);
       setTripPlan(null);
 
@@ -195,9 +197,9 @@ export default function TravelPlanner() {
   return (
     <div className="h-full relative">
       {/* Left Sidebar */}
-      <div className="h-full overflow-y-auto">
+      <div className="h-full">
         {/* Logo */}
-        <div className="flex justify-center mb-6 rounded-lg p-4 pt-[10px] w-full h-auto" style={{ background: 'white' }}>
+        <div className="flex justify-center mb-6 rounded-lg p-4 w-full h-auto" style={{ background: 'white' }}>
           <div className="relative w-[170px] h-[80px]">
             <Image
               src="/images/logo_travelpal.png"
@@ -210,58 +212,65 @@ export default function TravelPlanner() {
         </div>
 
         <div
-          className="w-full py-[20px] px-[25px] flex flex-col gap-[10px]"
+          className="w-full h-full py-[20px] px-[25px] flex flex-col gap-[10px]"
           style={{ background: '#FAF8F8', boxShadow: 'inset 0 0 15px rgba(0, 0, 0, 0.1)' }}
         >
-          {/* Start Date Input */}
-          <div className="flex relative items-center" >
-            <label className="block text-gray-700 font-medium mb-2 text-[14px] absolute px-[5px]" style={{ background: '#FAF8F8', top: '-15%', left: '3%' }}>
-              Ngày bắt đầu
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              placeholder="ngày/tháng/năm"
-              onChange={(e) => onStartDateChange(e.target.value)}
-              className="w-full px-3 py-2 p-[8px] pr-12 border-2 border-gray-200 rounded-[20px] focus:outline-none focus:border-orange-400 transition-colors text-[16px] text-center"
-              style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}
-            />
-            <button
-              type="button"
-              aria-label="Chọn ngày bắt đầu trên lịch"
-              className="absolute inset-y-0 flex items-center text-orange-400 p-[6px] flex justify-center items-center"
-              onClick={toggleCalendar}
-              ref={startIconRef}
-              style={{ right: '10px', border: 'none', backgroundColor: '#E5E5E5', borderRadius: '50%' }}
-            >
-              <CalendarIcon size={20} strokeWidth={2} />
-            </button>
+          <div className="grid grid-cols-2 gap-[15px]">
+            {/* Start Date Input */}
+            <div className="relative w-full">
+              <label className="block text-gray-700 font-medium mb-2 text-[14px] absolute px-[5px] z-10" style={{ background: '#FAF8F8', top: '-10px', left: '10px' }}>
+                Ngày bắt đầu
+              </label>
+              <div className="relative w-full">
+                <input
+                  type="date"
+                  value={startDate}
+                  placeholder="ngày/tháng/năm"
+                  onChange={(e) => onStartDateChange(e.target.value)}
+                  className="w-full px-3 py-2 p-[8px] pr-12 border-2 border-gray-200 rounded-[20px] focus:outline-none focus:border-orange-400 transition-colors text-[16px] text-center"
+                  style={{ background: 'white', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}
+                />
+                <button
+                  type="button"
+                  aria-label="Chọn ngày bắt đầu trên lịch"
+                  className="absolute inset-y-0 flex items-center text-orange-400 p-[6px] justify-center"
+                  onClick={toggleCalendar}
+                  ref={startIconRef}
+                  style={{ right: '5px', border: 'none', backgroundColor: '#D5D4DF', borderRadius: '50%', top: '5px' }}
+                >
+                  <CalendarIcon size={20} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+
+            {/* End Date Input */}
+            <div className="relative w-full">
+              <label className="block text-gray-700 font-medium mb-2 text-sm text-[14px] absolute px-[5px] z-10" style={{ background: '#FAF8F8', top: '-10px', left: '10px' }}>
+                Ngày kết thúc
+              </label>
+              <div className="relative w-full">
+                <input
+                  type="date"
+                  value={endDate}
+                  placeholder=" ngày/tháng/năm"
+                  onChange={(e) => onEndDateChange(e.target.value)}
+                  className="w-full px-3 py-2 p-[8px] pr-12 border-2 border-gray-200 rounded-[20px] focus:outline-none focus:border-orange-400 transition-colors text-[16px] text-center"
+                  style={{ background: 'white', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}
+                />
+                <button
+                  type="button"
+                  aria-label="Chọn ngày kết thúc trên lịch"
+                  className="absolute inset-y-0 right-3 flex items-center text-orange-400 p-[6px] justify-center"
+                  onClick={toggleCalendar}
+                  ref={endIconRef}
+                  style={{ right: '5px', border: 'none', backgroundColor: '#D5D4DF', borderRadius: '50%', top: '5px' }}
+                >
+                  <CalendarIcon size={20} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* End Date Input */}
-          <div className="flex relative items-center">
-            <label className="block text-gray-700 font-medium mb-2 text-sm text-[14px] absolute px-[5px]" style={{ background: '#FAF8F8', top: '-15%', left: '3%' }}>
-              Ngày kết thúc
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              placeholder=" ngày/tháng/năm"
-              onChange={(e) => onEndDateChange(e.target.value)}
-              className="w-full px-3 py-2 p-[8px] pr-12 border-2 border-gray-200 rounded-[20px] focus:outline-none focus:border-orange-400 transition-colors text-[16px] text-center"
-              style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}
-            />
-            <button
-              type="button"
-              aria-label="Chọn ngày kết thúc trên lịch"
-              className="absolute inset-y-0 right-3 flex items-center text-orange-400 p-[6px] flex justify-center"
-              onClick={toggleCalendar}
-              ref={endIconRef}
-              style={{ right: '10px', border: 'none', backgroundColor: '#E5E5E5', borderRadius: '50%' }}
-            >
-              <CalendarIcon size={20} strokeWidth={2} />
-            </button>
-          </div>
 
           <div className="relative">
             {isCalendarOpen && (
@@ -281,13 +290,13 @@ export default function TravelPlanner() {
           </div>
 
           {/* Description Textarea */}
-          <div className="relative pb-[40px] rounded-[10px] border-2 border-gray-200 overflow-hidden" style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}>
+          <div className="relative pb-[40px] rounded-[10px] border-2 border-gray-200 overflow-hidden" style={{ background: 'white', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Hãy miêu tả mong muốn chi tiết của bạn khi lập kế hoạch"
-              rows={8}
-              className="w-full px-3 py-2 p-[10px] rounded-lg focus:outline-none focus:border-orange-400 transition-colors resize-none text-sm  text-[16px]" style={{ border: 'none', background: '#FAF8F8' }}
+              rows={2}
+              className="w-full px-3 py-2 p-[10px] rounded-lg focus:outline-none focus:border-orange-400 transition-colors resize-none text-sm  text-[16px]" style={{ border: 'none', background: 'white' }}
             />
             <div className="flex justify-end items-center mt-2 gap-2 absolute bottom-[10px] right-[10px] transition-all duration-200" onMouseEnter={(e) => {
               const span = e.currentTarget.querySelector('#suggestion');
@@ -325,18 +334,12 @@ export default function TravelPlanner() {
             </Button>
           </div>
 
-          {/* Plan Display */}
-          <div className="w-full mt-6 flex-1" style={{ minHeight: '100%' }}>
-            <PlanDisplay
-              tripPlan={tripPlan}
-              isLoading={isLoading}
-              error={error}
-              onReject={handleRejectEvent}
-              onRestore={handleRestoreEvent}
-              onRegenerate={handleRegenerateRejected}
-              isRegenerating={regenerating}
-            />
-          </div>
+          {/* Chat box */}
+          {hasGenerated && (
+            <div className="flex-1 h-full mb-[6px]" style={{ borderRadius: '10px', border: '1px solid #D5D4D', overflow: 'hidden', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)' }}>
+              <ChatBox embedded={true} className="h-full" isLoading={isLoading} />
+            </div>
+          )}
         </div>
       </div>
 

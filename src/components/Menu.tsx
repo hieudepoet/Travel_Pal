@@ -57,50 +57,6 @@ const Menu = () => {
         </button>
       )}
 
-      {/* Tab navigation */}
-      {!isMenuCollapsed && (
-        <div
-          className="flex self-start rounded-full px-2 py-1"
-          style={{
-            gap: '5px',
-            backgroundColor: 'rgba(255, 255, 255, 0.7)',
-            height: '48px',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 10px',
-            animation: 'slideInLeft 0.3s ease-out',
-          }}
-        >
-          {tabItems.map((tab) => {
-            const isActive = activeTab === tab.value;
-            return (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setActiveTab(tab.value)}
-                className={`rounded-full px-4 py-2 text-[18px] transition ${isActive ? 'text-white shadow' : 'text-[#d0d0d0] hover:text-[#ff9c48]'
-                  }`}
-                style={{
-                  padding: '5px 10px',
-                  border: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: 'fit-content',
-                  cursor: 'pointer',
-                  borderTop: isActive ? '1px solid #ffffff' : 'none',
-                  background: isActive
-                    ? 'linear-gradient(135deg, rgba(255,81,47,0.85) 0%, rgba(240,152,25,0.85) 100%)'
-                    : 'none',
-                  color: '#ffffff',
-                }}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       {/* Vertical icon stack */}
       <div className="flex flex-col" style={{ gap: '5px' }}>

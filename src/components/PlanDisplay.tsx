@@ -5,8 +5,7 @@ import { toast } from 'react-toastify';
 import { Dashboard } from './Dashboard';
 import { EventCard } from './EventCard';
 import { TripPlan } from '../types/types';
-import { AlertCircle, RefreshCw, Heart, Loader2 } from 'lucide-react';
-import Loading from './Loading';
+import { AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 
 interface PlanDisplayProps {
     tripPlan: TripPlan | null;
@@ -48,16 +47,8 @@ export default function PlanDisplay({
                 </div>
             )}
 
-            {isLoading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="flex flex-col items-center gap-3">
-                        <Loading />
-                        <span className="text-gray-600 font-medium flex items-center gap-[4px]">
-                            Đang suy nghĩ, hãy đợi chút nhé <Heart className="w-[20px] h-[20px] animate-pulse" fill="currentColor" style={{ color: '#FDA4A4' }} />
-                        </span>
-                    </div>
-                </div>
-            ) : !tripPlan ? (
+            {/* Loading state removed, handled by ChatBox */}
+            {!tripPlan ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center">
                     <div className="bg-blue-50 p-4 rounded-full mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

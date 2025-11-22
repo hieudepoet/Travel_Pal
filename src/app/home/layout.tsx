@@ -26,12 +26,12 @@ export default function HomeLayout({
   return (
     <AuthGuard requireAuth={true}>
       <div className={`${roboto.className} flex h-screen`}>
-        <div className="w-[30%] h-full overflow-auto">
-          <TravelPlanner />
-        </div>
-        <main className="w-[70%] h-full overflow-auto">
+        <main className="w-[70%] h-full overflow-hidden">
           {children}
         </main>
+        <div className="w-[30%] h-full overflow-hidden">
+          <TravelPlanner />
+        </div>
       </div>
     </AuthGuard>
   )

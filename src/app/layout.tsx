@@ -37,7 +37,6 @@ export default function RootLayout({
           style={{ zIndex: 9999 }}
         />
         {children}
-        <ChatBox style={{ left: '30%', bottom: '1.5rem', marginLeft: '1.5rem', right: 'auto' }} />
       </body>
     </html>
   );

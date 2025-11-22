@@ -2,11 +2,10 @@
 import { GoogleGenAI, Type, Schema, Chat, FunctionDeclaration } from "@google/genai";
 import { UserPreferences, TripPlan, TravelStyle } from "../types/types";
 
-// Use NEXT_PUBLIC_ prefix for Client Component visibility in Next.js
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_AGENT_API_KEY });
 const MODEL_NAME = "gemini-2.5-flash";
 
-// --- Schema Definitions ---
+// --- Schema Definitions (kept for tool calling) ---
 const eventSchema: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -70,65 +69,146 @@ const tripPlanSchema: Schema = {
 const updateItineraryTool: FunctionDeclaration = {
     name: "update_itinerary",
     description: "Call this function ONLY when you need to modify, add, or remove events in the travel plan based on user request. Return the FULL updated trip plan.",
-    parameters: tripPlanSchema // We use the full schema to ensure we get a complete state back
+    parameters: tripPlanSchema
 };
 
 let chatSession: Chat | null = null;
 
 /**
- * Generates the initial trip and initializes the Chat Session.
+ * Helper to extract JSON from text that might contain markdown or grounding text.
+ */
+const extractJsonFromText = (text: string): any => {
+    try {
+        // Try standard parsing first
+        return JSON.parse(text);
+    } catch (e) {
+        // Try finding markdown json blocks
+        const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch && jsonMatch[1]) {
+            try {
+                return JSON.parse(jsonMatch[1]);
+            } catch (e2) {
+                console.error("Failed to parse Markdown JSON", e2);
+            }
+        }
+        // Try finding just the first brace structure
+        const firstBrace = text.indexOf('{');
+        const lastBrace = text.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            try {
+                return JSON.parse(text.substring(firstBrace, lastBrace + 1));
+            } catch (e3) {
+                console.error("Failed to parse brace JSON", e3);
+            }
+        }
+        throw new Error("Could not parse JSON from model response");
+    }
+};
+
+/**
+ * Generates the initial trip using Google Search Grounding.
  */
 export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> => {
+  // Determine budget string logic
+  const budgetInstruction = prefs.exactBudget && prefs.exactBudget > 0
+    ? `STRICT TOTAL BUDGET: ${prefs.exactBudget} ${prefs.currency || 'USD'} for the ENTIRE party. You MUST try to keep the Total Cost below this number.`
+    : `Budget Preference: ${prefs.budget || "Moderate"}.`;
+
   const prompt = `
     Act as an expert travel agent. Plan a detailed trip to ${prefs.destination}.
     Dates: ${prefs.startDate} to ${prefs.endDate}.
+    Travel Party: ${prefs.partySize.adults} Adults, ${prefs.partySize.children} Children.
     Styles: ${prefs.style.join(", ")}.
     User Note: ${prefs.prompt}.
-    Budget Constraint: ${prefs.budget || "Moderate"}.
+    ${budgetInstruction}
     
-    CRITICAL DATA REQUIREMENTS:
-    1. Provide REAL specific addresses for every location.
-    2. Estimate costs accurately in ${prefs.destination}'s local currency or USD.
-    3. Include official websites or phone numbers where possible.
-    4. Ensure logical transport times between specific addresses.
-    5. Generate unique IDs for every event.
+    TASK:
+    1. Use Google Search to find REAL-TIME weather, up-to-date ticket prices, and opening hours for ${prefs.destination}.
+    2. Select activities appropriate for ${prefs.partySize.children > 0 ? 'families with children' : 'adults'}.
+    3. Calculate estimated Total Cost for the WHOLE party (${prefs.partySize.adults + prefs.partySize.children} people) in ${prefs.currency || 'USD'}.
+    
+    OUTPUT FORMAT:
+    After gathering information, output the itinerary strictly as a JSON object.
+    The JSON must match this TypeScript interface:
+    
+    {
+      summary: string;
+      tips: string;
+      stats: {
+        totalCost: number; // Total for everyone in ${prefs.currency || 'USD'}
+        currency: string; // Must be ${prefs.currency || 'USD'}
+        totalEvents: number;
+        weatherSummary: string;
+        durationDays: number;
+      },
+      itinerary: [
+        {
+          day: number,
+          date: string, // YYYY-MM-DD
+          theme: string,
+          events: [
+             {
+                id: string, // UUID
+                time: string,
+                activity: string,
+                locationName: string,
+                address: string, // REAL ADDRESS from Search
+                phoneNumber: string,
+                website: string,
+                description: string,
+                costEstimate: number, // Cost per person
+                currency: string,
+                transportMethod: string,
+                transportDuration: string,
+                type: "activity" | "food" | "lodging" | "transport",
+                status: "accepted"
+             }
+          ]
+        }
+      ]
+    }
+    
+    Ensure the JSON is valid and contains no comments. Wrap it in \`\`\`json code blocks.
   `;
 
   try {
-    // Initial Generation - we use generateContent to get the structured data strictly first.
+    // We use tools: [{googleSearch: {}}] to get real data.
+    // We DO NOT use responseSchema here because it often conflicts with Search tools in the current API version.
+    // Instead we rely on the prompt to force JSON output.
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
-        responseSchema: tripPlanSchema,
+        tools: [{ googleSearch: {} }]
       },
     });
 
     if (!response.text) throw new Error("No content generated");
-    const initialPlan = JSON.parse(response.text) as TripPlan;
+    
+    // Extract JSON from the potentially grounded response (which contains citations/text)
+    const initialPlan = extractJsonFromText(response.text) as TripPlan;
 
-    // Initialize Chat Session with the context of the created plan
+    // Initialize Chat Session
     chatSession = ai.chats.create({
         model: MODEL_NAME,
         config: {
             systemInstruction: `You are a smart travel assistant. 
-            Context: User is currently viewing a travel plan you created.
-            Goal: Help refine the plan.
+            Context: User is viewing a plan for ${prefs.partySize.adults} adults and ${prefs.partySize.children} children to ${prefs.destination}.
+            Goal: Refine the plan using 'update_itinerary'.
             
             Token Saving Rules:
-            1. Be concise in text responses.
-            2. When the user asks for a change to the schedule, DO NOT explain what you are doing. Just call the 'update_itinerary' tool immediately.
-            3. Only output text if the user asks a question (e.g., "Is it cold?").
+            1. Concise text responses.
+            2. Call 'update_itinerary' immediately for changes.
+            3. Only output text if asked a question.
             
             Data Rules:
-            1. Always maintain valid JSON for the tool.
-            2. Keep addresses and contact info accurate when updating.`,
-            tools: [{ functionDeclarations: [updateItineraryTool] }]
+            1. Maintain valid JSON.
+            2. Use Google Search if the user asks for new real-time info (like "check if it's raining today").`,
+            tools: [{ functionDeclarations: [updateItineraryTool] }, { googleSearch: {} }]
         },
         history: [
             { role: 'user', parts: [{ text: prompt }] },
-            { role: 'model', parts: [{ text: "Here is your initial plan." }] } // We simulate that the model returned the plan
+            { role: 'model', parts: [{ text: "Here is your initial plan." }] }
         ]
     });
 
@@ -141,7 +221,6 @@ export const generateTrip = async (prefs: UserPreferences): Promise<TripPlan> =>
 
 /**
  * Sends a message to the chatbot.
- * Returns text response AND optionally a new TripPlan if the tool was called.
  */
 export const sendChatMessage = async (message: string, currentPlan: TripPlan): Promise<{ text: string, updatedPlan?: TripPlan }> => {
     if (!chatSession) {
@@ -161,7 +240,6 @@ export const sendChatMessage = async (message: string, currentPlan: TripPlan): P
                 if (call.name === 'update_itinerary') {
                     updatedPlan = call.args as unknown as TripPlan;
                     
-                    // Send tool execution result back to model to keep history consistent
                     const toolResponse = await chatSession.sendMessage({
                         message: [{
                             functionResponse: {
@@ -172,8 +250,6 @@ export const sendChatMessage = async (message: string, currentPlan: TripPlan): P
                         }]
                     });
                     
-                    // If the model returns a confirmation message, use it. 
-                    // Otherwise fallback to default text if original response was empty.
                     if (toolResponse.text) {
                         responseText = toolResponse.text;
                     } else if (!responseText) {
@@ -201,8 +277,9 @@ export const updateTrip = async (currentPlan: TripPlan, rejectedIds: string[]): 
 
     const prompt = `
       The user has rejected events with IDs: ${rejectedIds.join(", ")}.
-      Replace them with new activities.
-      CRITICAL: Include specific Address, Price, and details for new events.
+      Replace them with new activities appropriate for the party size.
+      Use Google Search to ensure new places are open.
+      CRITICAL: Include specific Address, Price, and details.
       Call 'update_itinerary'.
     `;
 
