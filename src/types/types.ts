@@ -29,6 +29,7 @@ export interface UserPreferences {
     children: number;
   };
 }
+
 export interface UserPreferencesPartial {
   destination?: string;
   startDate?: string;
@@ -43,22 +44,25 @@ export interface UserPreferencesPartial {
     children?: number;
   };
 }
+
 export interface ItineraryEvent {
   id: string;
   time: string;
   endTime?: string;
   activity: string;
   locationName: string;
-  address?: string;      // Added: Full physical address
-  phoneNumber?: string;  // Added: Contact number
-  website?: string;      // Added: Website URL
+  address?: string;
+  phoneNumber?: string;
+  website?: string;
   description: string;
   costEstimate: number;
-  currency: string;
+  currency?: string;
   transportMethod: string;
   transportDuration: string;
   status: 'pending' | 'accepted' | 'rejected';
   type: 'activity' | 'food' | 'lodging' | 'transport';
+  bookingLink?: string;
+  notes?: string;
 }
 
 export interface DayPlan {
