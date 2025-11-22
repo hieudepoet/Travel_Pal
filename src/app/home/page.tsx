@@ -5,16 +5,12 @@ import { useRouter } from 'next/navigation';
 import Menu from '@/components/Menu';
 import { InputForm } from '@/components/InputForm';
 import { LoadingOverlay } from '@/components/LoadingOverlay';
-import { UserPreferences } from '@/types/types';
-import { generateTrip } from '@/service/geminiService';
-
-const HomePage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 import { UserPreferences, TripPlan } from '@/types/types';
+import { generateTrip } from '@/service/geminiService';
 import PlanDisplay from '@/components/PlanDisplay';
 
 const HomePage = () => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
