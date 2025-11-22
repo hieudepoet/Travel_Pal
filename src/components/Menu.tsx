@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { MenuIcon, User2, LogOut, Sparkles } from 'lucide-react';
+import { MenuIcon, User2, Sparkles } from 'lucide-react';
+import Logout from './Logout';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
 import Loading from './Loading';
@@ -72,25 +73,7 @@ const Menu = () => {
       </button>
 
       {/* Logout */}
-      {isLoggingOut ? (
-        <div className="flex items-center justify-center p-2">
-          <Loading />
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="flex items-center justify-center rounded-full text-gray-700 hover:text-red-500 hover:bg-red-50 transition-colors p-[4px]"
-          style={{
-            border: 'none',
-            cursor: 'pointer',
-          }}
-          aria-label="Đăng xuất"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-        >
-          <LogOut strokeWidth={2} className="h-[30px] w-[30px]" />
-        </button>
-      )}
+      <Logout onClick={handleLogout} isLoading={isLoggingOut} />
     </div>
   );
 };

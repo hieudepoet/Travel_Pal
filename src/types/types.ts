@@ -29,7 +29,6 @@ export interface UserPreferences {
     children: number;
   };
 }
-
 export interface UserPreferencesPartial {
   destination?: string;
   startDate?: string;
@@ -44,7 +43,6 @@ export interface UserPreferencesPartial {
     children?: number;
   };
 }
-
 export interface ItineraryEvent {
   id: string;
   time: string;

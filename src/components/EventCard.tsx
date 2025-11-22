@@ -39,11 +39,11 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
   const typeColor = getTypeColor();
 
   return (
-    <div style={{ borderRadius: '10px', borderLeft: '5px solid', borderLeftColor: typeColor.backgroundColor }} className={`relative transition-all duration-300 ${isRejected
+    <div style={{ borderRadius: '10px', borderLeft: '4px solid', borderLeftColor: typeColor.backgroundColor }} className={`relative transition-all duration-300 ${isRejected
       ? 'border-red-300 bg-red-50 opacity-60'
       : 'border-gray-200 hover:shadow-md'
       }`}>
-      <div className="flex gap-3 p-[10px]" style={{ borderRadius: '10px', backgroundColor: 'white', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+      <div className="flex gap-3 p-[10px]" style={{ borderRadius: '10px', background: `linear-gradient(to bottom right, ${typeColor.backgroundColor}15, white)`, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
         {/* Image */}
         <div
           className="w-[150px] h-[150px] flex-shrink-0 rounded-lg overflow-hidden cursor-pointer group relative mr-[10px]" style={{ borderRadius: '10px' }}
@@ -132,7 +132,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
             <div>
               {isRejected ? (
                 <button
-                  onClick={() => onRestore(event.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRestore(event.id);
+                  }}
                   style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.375rem 0.75rem', fontSize: '0.75rem', fontWeight: '600', color: '#15803d', backgroundColor: 'white', border: '1px solid #16a34a', borderRadius: '0.5rem', transition: 'all 0.2s', cursor: 'pointer' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0fdf4'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
@@ -142,7 +145,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
                 </button>
               ) : (
                 <button
-                  onClick={() => onReject(event.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReject(event.id);
+                  }}
                   style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.2rem 0.50rem', fontSize: '0.75rem', fontWeight: '600', color: '#b91c1c', backgroundColor: 'white', border: '1px solid #dc2626', borderRadius: '0.5rem', transition: 'all 0.2s', cursor: 'pointer' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
