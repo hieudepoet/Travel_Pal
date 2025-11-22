@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { MenuIcon, User2, LogOut, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '../../firebase/clientApp';
@@ -46,10 +47,11 @@ const Menu = () => {
         }}
         aria-label="Chọn vị trí mặc định"
       >
-        <img
+        <Image
           src="/images/my_location.svg"
           alt="Định vị"
-          className="h-[30px] w-[30px]"
+          width={30}
+          height={30}
         />
       </button>
 
