@@ -1,13 +1,18 @@
 
 export enum TravelStyle {
-  CULTURAL = "Cultural",
-  ADVENTURE = "Adventure",
-  RELAXING = "Relaxing",
-  FOODIE = "Foodie",
-  HISTORICAL = "Historical",
-  NATURE = "Nature",
-  LUXURY = "Luxury",
-  BUDGET = "Budget"
+  CULTURAL = "Văn hóa",
+  ADVENTURE = "Mạo hiểm",
+  RELAXING = "Nghỉ dưỡng",
+  FOODIE = "Ẩm thực",
+  HISTORICAL = "Lịch sử",
+  NATURE = "Thiên nhiên",
+  LUXURY = "Sang trọng",
+  BUDGET = "Tiết kiệm",
+  FAMILY = "Gia đình",
+  COUPLE = "Cặp đôi",
+  SOLO = "Một mình",
+  SHOPPING = "Mua sắm",
+  NIGHTLIFE = "Về đêm"
 }
 
 export interface UserPreferences {

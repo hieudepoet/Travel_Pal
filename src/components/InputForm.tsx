@@ -15,19 +15,19 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
     const [endDate, setEndDate] = useState('');
     const [selectedStyles, setSelectedStyles] = useState<TravelStyle[]>([]);
     const [prompt, setPrompt] = useState('');
-    const [adults, setAdults] = useState(2);
+    const [adults, setAdults] = useState(1);
     const [children, setChildren] = useState(0);
     const [exactBudget, setExactBudget] = useState<string>('');
     const [currency, setCurrency] = useState('USD');
     const [budgetIndex, setBudgetIndex] = useState(1);
     const [error, setError] = useState<string | null>(null);
 
-    const budgetLevels = ["Economy", "Moderate", "Premium", "Luxury"];
+    const budgetLevels = ["Tiết kiệm", "Trung bình", "Cao cấp", "Sang trọng"];
     const budgetDescriptions = [
-        "Cost-conscious travel",
-        "Balanced comfort",
-        "Upscale experiences",
-        "Luxury everything"
+        "Du lịch tiết kiệm chi phí",
+        "Cân bằng sự thoải mái",
+        "Trải nghiệm cao cấp",
+        "Sang trọng mọi thứ"
     ];
     const currencies = ["USD", "EUR", "JPY", "VND", "GBP", "AUD"];
 
