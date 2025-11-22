@@ -39,8 +39,9 @@ export default function TripPage() {
         setMessages(newMessages);
         setIsChatLoading(true);
 
+
         try {
-            const { text: responseText, updatedPlan } = await sendChatMessage(text);
+            const { text: responseText, updatedPlan } = await sendChatMessage(text, tripPlan!);
 
             setMessages(prev => [...prev, { role: 'model', text: responseText }]);
 
@@ -99,7 +100,7 @@ export default function TripPage() {
 
         setIsRegenerating(true);
         try {
-            const newPlan = await updateTrip(rejectedIds);
+            const newPlan = await updateTrip(tripPlan, rejectedIds);
             setTripPlan(newPlan);
             sessionStorage.setItem('currentTripPlan', JSON.stringify(newPlan));
             setMessages(prev => [...prev, { role: 'model', text: "Tôi đã cập nhật lại lịch trình dựa trên các thay đổi của bạn." }]);
