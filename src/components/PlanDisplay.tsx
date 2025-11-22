@@ -18,6 +18,7 @@ interface PlanDisplayProps {
     onRegenerate?: () => void;
     isRegenerating?: boolean;
     onAddDayToCalendar?: (dayIndex: number) => void;
+    syncingDayIndex?: number | null;
 }
 
 export default function PlanDisplay({
@@ -28,7 +29,8 @@ export default function PlanDisplay({
     onRestore,
     onRegenerate,
     isRegenerating = false,
-    onAddDayToCalendar
+    onAddDayToCalendar,
+    syncingDayIndex
 }: PlanDisplayProps) {
 
     // Use fake data if no plan is provided
@@ -104,15 +106,17 @@ export default function PlanDisplay({
                                     {onAddDayToCalendar && (
                                         <button
                                             onClick={() => onAddDayToCalendar(day.day - 1)}
-                                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all hover:bg-blue-600"
+                                            disabled={syncingDayIndex === day.day - 1}
+                                            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-all"
                                             style={{
-                                                backgroundColor: '#3b82f6',
+                                                backgroundColor: syncingDayIndex === day.day - 1 ? '#9ca3af' : '#3b82f6',
                                                 color: 'white',
                                                 border: 'none',
-                                                cursor: 'pointer'
+                                                cursor: syncingDayIndex === day.day - 1 ? 'not-allowed' : 'pointer',
+                                                opacity: syncingDayIndex === day.day - 1 ? 0.6 : 1
                                             }}
                                         >
-                                            📅 Add to Calendar
+                                            📅 {syncingDayIndex === day.day - 1 ? 'Đang thêm...' : 'Add to Calendar'}
                                         </button>
                                     )}
                                 </div>

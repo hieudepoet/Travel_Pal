@@ -1,79 +1,142 @@
 import { TripPlan, DayPlan, ItineraryEvent } from '../types/types';
 
 /**
- * Generate Google Calendar URL for a single event
+ * Add a single day's events to Google Calendar using Calendar API
  */
-const generateCalendarUrl = (event: ItineraryEvent, date: string): string => {
-    try {
-        // Parse time and create start/end times
-        const startDateTime = new Date(`${date}T${event.time}:00`);
-        const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // 1 hour duration
+export const addDayToCalendar = async (
+    dayPlan: DayPlan,
+    accessToken: string
+): Promise<{ successCount: number; failCount: number }> => {
+    console.log('🔍 addDayToCalendar called');
+    console.log('📅 Day:', dayPlan.day, 'Date:', dayPlan.date);
+    console.log('🔑 Token (first 20 chars):', accessToken.substring(0, 20) + '...');
+    console.log('📊 Total events:', dayPlan.events.length);
 
-        // Format to Google Calendar format: YYYYMMDDTHHMMSSZ
-        const formatDate = (d: Date) => {
-            return d.toISOString().replace(/-|:|\.\d+/g, '');
-        };
-
-        const startTime = formatDate(startDateTime);
-        const endTime = formatDate(endDateTime);
-
-        const location = event.address || event.locationName;
-        const details = `${event.description}\n\nNotes: ${event.notes || ''}\nBooking: ${event.bookingLink || ''}\nCost: ${event.costEstimate} VND`;
-
-        const baseUrl = "https://calendar.google.com/calendar/render";
-        const params = new URLSearchParams({
-            action: "TEMPLATE",
-            text: `[TravelPal] ${event.activity}`,
-            dates: `${startTime}/${endTime}`,
-            details: details,
-            location: location,
-        });
-
-        return `${baseUrl}?${params.toString()}`;
-    } catch (error) {
-        console.error('Error generating calendar URL:', error);
-        return '';
-    }
-};
-
-/**
- * Open Google Calendar URLs for all events in a day
- * Opens each event in a new tab
- */
-export const addDayToCalendar = (dayPlan: DayPlan): { successCount: number } => {
     let successCount = 0;
+    let failCount = 0;
 
-    dayPlan.events.forEach(event => {
+    for (const event of dayPlan.events) {
         // Skip rejected events
-        if (event.status === 'rejected') return;
-
-        const url = generateCalendarUrl(event, dayPlan.date);
-        if (url) {
-            window.open(url, '_blank');
-            successCount++;
+        if (event.status === 'rejected') {
+            console.log('⏭️ Skipping rejected event:', event.activity);
+            continue;
         }
-    });
 
-    return { successCount };
+        try {
+            // Parse time (HH:mm) and date (YYYY-MM-DD) to ISO format
+            const startDateTime = new Date(`${dayPlan.date}T${event.time}:00`);
+            const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // Default 1 hour duration
+
+            const calendarEvent = {
+                summary: `[TravelPal] ${event.activity}`,
+                location: event.address || event.locationName,
+                description: `${event.description}\n\nNotes: ${event.notes || ''}\nBooking: ${event.bookingLink || ''}\nCost: ${event.costEstimate} VND`,
+                start: {
+                    dateTime: startDateTime.toISOString(),
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                },
+                end: {
+                    dateTime: endDateTime.toISOString(),
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                },
+            };
+
+            console.log('📤 Creating event:', event.activity);
+
+            const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(calendarEvent),
+            });
+
+            if (response.ok) {
+                console.log('✅ Success:', event.activity);
+                successCount++;
+            } else {
+                const errorText = await response.text();
+                console.error('❌ Failed:', event.activity);
+                console.error('Status:', response.status, response.statusText);
+                console.error('Error:', errorText);
+                failCount++;
+            }
+        } catch (error) {
+            console.error('💥 Exception for event:', event.activity, error);
+            failCount++;
+        }
+    }
+
+    console.log('📊 Results - Success:', successCount, 'Failed:', failCount);
+    return { successCount, failCount };
 };
 
 /**
- * Open Google Calendar URLs for all events in the trip
+ * Add all trip events to Google Calendar using Calendar API
  */
-export const addTripToCalendar = (tripPlan: TripPlan): { successCount: number } => {
-    let successCount = 0;
+export const addTripToCalendar = async (
+    tripPlan: TripPlan,
+    accessToken: string
+): Promise<{ successCount: number; failCount: number }> => {
+    const events: Array<ItineraryEvent & { date: string }> = [];
 
+    // Flatten all events from the itinerary
     tripPlan.itinerary.forEach(day => {
         day.events.forEach(event => {
             if (event.status !== 'rejected') {
-                const url = generateCalendarUrl(event, day.date);
-                if (url) {
-                    window.open(url, '_blank');
-                    successCount++;
-                }
+                events.push({
+                    ...event,
+                    date: day.date
+                });
             }
         });
     });
 
-    return { successCount };
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const event of events) {
+        try {
+            // Parse time (HH:mm) and date (YYYY-MM-DD) to ISO format
+            const startDateTime = new Date(`${event.date}T${event.time}:00`);
+            const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000); // Default 1 hour duration
+
+            const calendarEvent = {
+                summary: `[TravelPal] ${event.activity}`,
+                location: event.address || event.locationName,
+                description: `${event.description}\n\nNotes: ${event.notes || ''}\nBooking: ${event.bookingLink || ''}`,
+                start: {
+                    dateTime: startDateTime.toISOString(),
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                },
+                end: {
+                    dateTime: endDateTime.toISOString(),
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                },
+            };
+
+            const response = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(calendarEvent),
+            });
+
+            if (response.ok) {
+                successCount++;
+            } else {
+                const errorText = await response.text();
+                console.error('Failed to add event:', errorText);
+                failCount++;
+            }
+        } catch (error) {
+            console.error('Error adding event to calendar:', error);
+            failCount++;
+        }
+    }
+
+    return { successCount, failCount };
 };
