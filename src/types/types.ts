@@ -30,6 +30,21 @@ export interface UserPreferences {
   };
 }
 
+export interface UserPreferencesPartial {
+  destination?: string;
+  startDate?: string;
+  endDate?: string;
+  style?: TravelStyle[];
+  prompt?: string;
+  budget?: string;
+  exactBudget?: number;
+  currency?: string;
+  partySize?: {
+    adults?: number;
+    children?: number;
+  };
+}
+
 export interface ItineraryEvent {
   id: string;
   time: string;
