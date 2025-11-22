@@ -177,7 +177,7 @@ const HomePage = () => {
             fontWeight: 900,
             letterSpacing: '-0.05em',
             marginBottom: '2rem',
-            background: 'linear-gradient(to right, #FF512F, #F09819, #FF512F)', 
+            background: 'linear-gradient(to right, #FF512F, #F09819, #FF512F)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             opacity: 0,
