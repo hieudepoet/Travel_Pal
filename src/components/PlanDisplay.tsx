@@ -7,6 +7,8 @@ import { EventCard } from './EventCard';
 import { TripPlan } from '../types/types';
 import { AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 
+import { fakeTripPlan } from '../constant/fakeData';
+
 interface PlanDisplayProps {
     tripPlan: TripPlan | null;
     isLoading: boolean;
@@ -27,6 +29,9 @@ export default function PlanDisplay({
     isRegenerating = false
 }: PlanDisplayProps) {
 
+    // Use fake data if no plan is provided
+    const displayPlan = tripPlan || fakeTripPlan;
+
     // Show error toast when error changes
     useEffect(() => {
         if (error) {
@@ -34,12 +39,12 @@ export default function PlanDisplay({
         }
     }, [error]);
 
-    const rejectedCount = tripPlan?.itinerary.reduce((acc, day) =>
+    const rejectedCount = displayPlan?.itinerary.reduce((acc, day) =>
         acc + day.events.filter(e => e.status === 'rejected').length, 0
     ) || 0;
 
     return (
-        <div className="w-full p-[10px]" style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: "20px" }}>
+        <div className="w-full p-[10px] h-full " style={{ background: '#FAF8F8', border: '1px solid #D5D4DF', boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)', borderRadius: "20px" }}>
             {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700 animate-pulse">
                     <AlertCircle className="w-5 h-5" />
@@ -48,7 +53,7 @@ export default function PlanDisplay({
             )}
 
             {/* Loading state removed, handled by ChatBox */}
-            {!tripPlan ? (
+            {!displayPlan ? (
                 <div className="flex flex-col items-center justify-center h-64 text-center">
                     <div className="bg-blue-50 p-4 rounded-full mb-4">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,8 +65,8 @@ export default function PlanDisplay({
             ) : (
                 <div className="w-full animate-fade-in">
                     <Dashboard
-                        stats={tripPlan.stats}
-                        tips={tripPlan.tips}
+                        stats={displayPlan.stats}
+                        tips={displayPlan.tips}
                     />
 
                     {/* Action Bar for Regenerate */}
@@ -82,9 +87,9 @@ export default function PlanDisplay({
                         </div>
                     )}
 
-                    <div className="w-full">
-                        {tripPlan.itinerary.map((day) => (
-                            <div key={day.day} className="w-full relative mb-[20px]">
+                    <div className="w-full flex flex-row">
+                        {displayPlan.itinerary.map((day) => (
+                            <div key={day.day} className="w-full relative mr-[30px]">
                                 <div className="sticky top-24 z-10 flex items-center gap-4 mb-4">
                                     <div className="px-[6px] py-[4px] text-[16px] mr-[10px]" style={{ background: '#FDB88F', borderRadius: '0 20px 20px 0', color: 'white', fontWeight: 'bold' }}>
                                         Ngày {day.day}
