@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Menu from '@/components/Menu';
 import { InputForm } from '@/components/InputForm';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
 import { UserPreferences, TripPlan } from '@/types/types';
+import { generateTrip } from '@/service/geminiService';
 import PlanDisplay from '@/components/PlanDisplay';
 
 const HomePage = () => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -16,12 +20,14 @@ const HomePage = () => {
     setError(null);
     try {
       console.log('Travel preferences submitted:', prefs);
-      // TODO: Add API call to generate travel plan
-      // const plan = await generateTravelPlan(prefs);
-      // setTripPlan(plan);
+      const plan = await generateTrip(prefs);
+      sessionStorage.setItem('generatedTripPlan', JSON.stringify(plan));
+      router.push('/ai-planner');
     } catch (error) {
       console.error('Error generating travel plan:', error);
-      setError('Failed to generate travel plan. Please try again.');
+      // Optional: Add a toast or alert here if needed, but the overlay will just stop
+      // Actually, if error, we should probably stop loading
+      alert("Có lỗi xảy ra khi tạo kế hoạch. Vui lòng thử lại.");
     } finally {
       setIsLoading(false);
     }
@@ -75,6 +81,7 @@ const HomePage = () => {
           <InputForm onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
       </div>
+      <LoadingOverlay isLoading={isLoading} message="Đang tạo kế hoạch du lịch..." />
       {/* Plan Display */}
       <div style={{ flex: 1, minWidth: '0' }}>
         <PlanDisplay

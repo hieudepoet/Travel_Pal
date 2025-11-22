@@ -8,9 +8,9 @@ interface InputFormProps {
     onSubmit: (prefs: UserPreferences) => void;
     isLoading: boolean;
 }
-
+// PR đi 
 export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => {
-    const [destination, setDestination] = useState('Tokyo, Japan');
+    const [destination, setDestination] = useState('Đà Nẵng, Việt Nam');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedStyles, setSelectedStyles] = useState<TravelStyle[]>([]);
@@ -20,6 +20,7 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
     const [exactBudget, setExactBudget] = useState<string>('');
     const [currency, setCurrency] = useState('USD');
     const [budgetIndex, setBudgetIndex] = useState(1);
+    const [error, setError] = useState<string | null>(null);
 
     const budgetLevels = ["Economy", "Moderate", "Premium", "Luxury"];
     const budgetDescriptions = [
@@ -38,8 +39,10 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
+
         if (!startDate || !endDate) {
-            alert("Vui lòng chọn ngày bắt đầu và kết thúc");
+            setError("Vui lòng chọn ngày bắt đầu và kết thúc");
             return;
         }
 
@@ -69,24 +72,25 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Destination */}
-                <div style={{ width: '100%' }}>
-                    <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Đi đâu?</label>
-                    <div style={{ position: 'relative', width: '100%' }}>
-                        <MapPin style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', width: '20px', height: '20px' }} />
-                        <input
-                            type="text"
-                            required
-                            value={destination}
-                            onChange={e => setDestination(e.target.value)}
-                            placeholder="VD: Paris, France"
-                            style={{ width: '100%', paddingLeft: '40px', paddingRight: '16px', paddingTop: '10px', paddingBottom: '10px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none', transition: 'all 0.2s', backgroundColor: 'white', color: '#111827' }}
-                        />
+                {/* Destination and Dates Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '16px' }}>
+                    {/* Destination */}
+                    <div style={{ width: '100%' }}>
+                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Đi đâu?</label>
+                        <div style={{ position: 'relative', width: '100%' }}>
+                            <MapPin style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', width: '20px', height: '20px' }} />
+                            <input
+                                type="text"
+                                required
+                                value={destination}
+                                onChange={e => setDestination(e.target.value)}
+                                placeholder="VD: Paris, France"
+                                style={{ width: '100%', paddingLeft: '40px', paddingRight: '16px', paddingTop: '10px', paddingBottom: '10px', borderRadius: '8px', border: '1px solid #d1d5db', outline: 'none', transition: 'all 0.2s', backgroundColor: 'white', color: '#111827' }}
+                            />
+                        </div>
                     </div>
-                </div>
 
-                {/* Dates */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                    {/* Dates */}
                     <div>
                         <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px' }}>Ngày bắt đầu</label>
                         <div style={{ position: 'relative' }}>
@@ -115,7 +119,7 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     {/* Travelers */}
                     <div>
                         <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '8px' }}>Số người</label>
@@ -294,6 +298,26 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
                     />
                 </div>
 
+
+
+                {error && (
+                    <div style={{
+                        marginBottom: '16px',
+                        padding: '12px',
+                        backgroundColor: '#fef2f2',
+                        border: '1px solid #fee2e2',
+                        borderRadius: '8px',
+                        color: '#dc2626',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        {error}
+                    </div>
+                )}
+
                 <button
                     type="submit"
                     disabled={isLoading}
@@ -313,7 +337,9 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
                         gap: '8px',
                         background: isLoading ? '#9ca3af' : 'linear-gradient(to right, #f97316, #ea580c)',
                         cursor: isLoading ? 'not-allowed' : 'pointer',
-                        border: 'none'
+                        border: 'none',
+                        position: 'relative',
+                        zIndex: 10
                     }}
                     onMouseEnter={(e) => {
                         if (!isLoading) {
@@ -363,6 +389,6 @@ export const InputForm: React.FC<InputFormProps> = ({ onSubmit, isLoading }) => 
           }
         }
       `}</style>
-        </form>
+        </form >
     );
 };

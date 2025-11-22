@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { InputForm } from '../../components/InputForm';
 import { Dashboard } from '../../components/Dashboard';
 import { EventCard } from '../../components/EventCard';
 import { ChatWindow } from '../../components/ChatWindow';
 import { TripPlan, UserPreferences, ChatMessage } from '../../types/types';
 import { generateTrip, updateTrip, sendChatMessage } from '../../service/geminiService';
+import { LoadingOverlay } from '../../components/LoadingOverlay';
 import { Loader2, RefreshCw, ArrowLeft, AlertCircle } from 'lucide-react';
 
 type ViewMode = 'FORM' | 'TRIP';
@@ -20,18 +21,38 @@ export default function AIPlanner() {
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const storedPlan = sessionStorage.getItem('generatedTripPlan');
+    if (storedPlan) {
+      try {
+        const parsedPlan = JSON.parse(storedPlan);
+        setTripPlan(parsedPlan);
+        setViewMode('TRIP');
+        setMessages([
+          {
+            role: 'model',
+            text: `Tôi đã tạo kế hoạch du lịch cho bạn! Bạn có thể hỏi tôi để thay đổi chi tiết hoặc thêm thông tin.`
+          }
+        ]);
+        sessionStorage.removeItem('generatedTripPlan');
+      } catch (err) {
+        console.error('Failed to parse stored trip plan:', err);
+      }
+    }
+  }, []);
+
   const handleCreateTrip = async (prefs: UserPreferences) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const plan = await generateTrip(prefs);
       setTripPlan(plan);
       setViewMode('TRIP');
       setMessages([
-        { 
-          role: 'model', 
-          text: `Tôi đã tạo kế hoạch du lịch đến ${prefs.destination} cho bạn! Bạn có thể hỏi tôi để thay đổi chi tiết hoặc thêm thông tin.` 
+        {
+          role: 'model',
+          text: `Tôi đã tạo kế hoạch du lịch đến ${prefs.destination} cho bạn! Bạn có thể hỏi tôi để thay đổi chi tiết hoặc thêm thông tin.`
         }
       ]);
     } catch (err) {
@@ -44,22 +65,22 @@ export default function AIPlanner() {
 
   const handleTripChatMessage = async (text: string) => {
     if (!tripPlan) return;
-    
+
     setMessages(prev => [...prev, { role: 'user', text }]);
     setChatLoading(true);
 
     try {
       const { text: responseText, updatedPlan } = await sendChatMessage(text);
       setMessages(prev => [...prev, { role: 'model', text: responseText }]);
-      
+
       if (updatedPlan) {
         setTripPlan(updatedPlan);
       }
     } catch (err) {
       console.error('Chat error:', err);
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        text: "Xin lỗi, tôi gặp lỗi khi xử lý yêu cầu. Vui lòng thử lại." 
+      setMessages(prev => [...prev, {
+        role: 'model',
+        text: "Xin lỗi, tôi gặp lỗi khi xử lý yêu cầu. Vui lòng thử lại."
       }]);
     } finally {
       setChatLoading(false);
@@ -79,14 +100,14 @@ export default function AIPlanner() {
   const handleRejectEvent = useCallback((eventId: string) => {
     setTripPlan(prev => {
       if (!prev) return null;
-      
+
       const newItinerary = prev.itinerary.map(day => ({
         ...day,
         events: day.events.map(evt =>
           evt.id === eventId ? { ...evt, status: 'rejected' as const } : evt
         )
       }));
-      
+
       return { ...prev, itinerary: newItinerary };
     });
   }, []);
@@ -94,21 +115,21 @@ export default function AIPlanner() {
   const handleRestoreEvent = useCallback((eventId: string) => {
     setTripPlan(prev => {
       if (!prev) return null;
-      
+
       const newItinerary = prev.itinerary.map(day => ({
         ...day,
         events: day.events.map(evt =>
           evt.id === eventId ? { ...evt, status: 'accepted' as const } : evt
         )
       }));
-      
+
       return { ...prev, itinerary: newItinerary };
     });
   }, []);
 
   const handleRegenerateRejected = async () => {
     if (!tripPlan) return;
-    
+
     const rejectedIds: string[] = [];
     tripPlan.itinerary.forEach(day => {
       day.events.forEach(evt => {
@@ -124,9 +145,9 @@ export default function AIPlanner() {
     try {
       const updatedPlan = await updateTrip(rejectedIds);
       setTripPlan(updatedPlan);
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        text: "Tôi đã thay thế các hoạt động bị từ chối bằng các lựa chọn mới." 
+      setMessages(prev => [...prev, {
+        role: 'model',
+        text: "Tôi đã thay thế các hoạt động bị từ chối bằng các lựa chọn mới."
       }]);
     } catch (err) {
       console.error('Regenerate error:', err);
@@ -152,7 +173,7 @@ export default function AIPlanner() {
             </div>
             <h1 className="font-bold text-xl text-gray-900">AI Travel Planner</h1>
           </div>
-          
+
           {viewMode === 'TRIP' && (
             <button
               onClick={handleReset}
@@ -258,21 +279,10 @@ export default function AIPlanner() {
         )}
 
         {/* Loading Overlay */}
-        {loading && viewMode === 'FORM' && (
-          <div className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-2xl shadow-2xl border border-gray-100 text-center max-w-md mx-4">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                Đang tạo kế hoạch
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Đang phân tích thời tiết, kiểm tra giá vé và tìm kiếm địa điểm tốt nhất cho bạn...
-              </p>
-            </div>
-          </div>
-        )}
+        <LoadingOverlay
+          isLoading={loading && viewMode === 'FORM'}
+          message="Đang phân tích thời tiết, kiểm tra giá vé và tìm kiếm địa điểm tốt nhất cho bạn..."
+        />
       </main>
     </div>
   );
