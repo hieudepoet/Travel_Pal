@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
-import type { CityInfo, RegionDefinition, RegionId } from '../data/regions';
-import { provinces, regionCities, regions, vietnamViewBox } from '../data/regions';
-import { TOUR_ROUTES } from '../data/routes';
+import type { CityInfo, RegionDefinition, RegionId } from '../constant/regions';
+import { provinces, regionCities, regions, vietnamViewBox } from '../constant/regions';
+import { TOUR_ROUTES } from '../constant/routes';
 import RouteVisualization from './RouteVisualization';
 import GoogleMapComponent from './GoogleMapComponent';
 import { LocationResult } from '../utils/locationUtils';
-import { TourRoute } from '../data/routes';
+import { TourRoute } from '../constant/routes';
 import { normalizeProvinceName } from '../utils/provinceMapping';
 
 const LIBRARIES: ("places")[] = ["places"];
@@ -294,9 +294,9 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
 
                 <div className="absolute top-4 right-4 z-30">
                     <button
-                        className={`px-5 py-2.5 rounded-xl shadow-lg font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${showRoute
-                                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600 shadow-pink-500/30'
-                                : 'bg-white text-gray-800 hover:bg-gray-50 border border-gray-200'
+                        className={`px-4 py-2 rounded-lg shadow-lg font-bold transition-colors ${showRoute
+                            ? 'bg-pink-500 text-white hover:bg-pink-600'
+                            : 'bg-white text-gray-800 hover:bg-gray-100'
                             }`}
                         onClick={() => setShowRoute(!showRoute)}
                         title="Xem lộ trình tour"
@@ -347,7 +347,7 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
         return (
             <div className="map-pane map-pane--main relative w-1/3 h-full flex justify-center items-center overflow-hidden">
                 <button
-                    className="absolute top-4 left-4 z-10 bg-gray-900/90 backdrop-blur-md hover:bg-gray-900 text-white px-5 py-2.5 rounded-xl transition-all duration-200 font-semibold shadow-lg hover:scale-105 active:scale-95 border border-white/10"
+                    className="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white px-4 py-2 rounded-lg transition-colors"
                     onClick={() => setActiveRegion(null)}
                 >
                     ← Trở về toàn quốc
@@ -405,9 +405,9 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
 
                 <div className="absolute top-4 right-4 z-30">
                     <button
-                        className={`px-5 py-2.5 rounded-xl shadow-lg font-bold transition-all duration-200 hover:scale-105 active:scale-95 ${showRoute
-                                ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white hover:from-pink-600 hover:to-rose-600 shadow-pink-500/30'
-                                : 'bg-white text-gray-800 hover:bg-gray-50 border border-gray-200'
+                        className={`px-4 py-2 rounded-lg shadow-lg font-bold transition-colors ${showRoute
+                            ? 'bg-pink-500 text-white hover:bg-pink-600'
+                            : 'bg-white text-gray-800 hover:bg-gray-100'
                             }`}
                         onClick={() => setShowRoute(!showRoute)}
                         title="Xem lộ trình tour"
@@ -426,20 +426,20 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
     return (
         <div className={`relative w-full h-full flex overflow-hidden bg-[#020612] ${className}`} style={style}>
             {showSearchBar ? (
-                <div className="absolute top-4 right-4 z-50 w-[288px] bg-white p-3 rounded-xl shadow-xl border border-gray-200">
+                <div className="absolute top-4 right-4 z-50 w-[288px] bg-[#FAF8F8] p-2 rounded-lg shadow-lg border border-black">
                     <button
-                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 transition-colors"
+                        className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
                         onClick={() => setShowSearchBar(false)}
                         aria-label="Hide search bar"
                     >
                         <X size={18} />
                     </button>
                     <div className="relative w-full mt-6">
-                        <Search className="absolute h-full z-10 left-3 top-0 text-gray-400" size={18} />
+                        <Search className="absolute h-full z-10 right-2 top-0 text-gray-500" size={20} />
                         <input
                             type="text"
                             placeholder="Tìm kiếm địa điểm..."
-                            className="w-full pl-10 pr-3 py-2.5 text-sm border-2 border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all duration-200"
+                            className="w-full pr-8 pl-3 py-2 text-base border border-[#AFAFAF] rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -447,7 +447,7 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
                 </div>
             ) : (
                 <button
-                    className="absolute top-4 right-4 z-50 bg-white p-2.5 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 border border-gray-200"
+                    className="absolute top-4 right-4 z-50 bg-white p-2 rounded-lg shadow-lg hover:bg-gray-100 transition-colors border border-gray-200"
                     onClick={() => setShowSearchBar(true)}
                     title="Hiện thanh tìm kiếm"
                 >
@@ -460,7 +460,7 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
                 <div className="absolute top-20 right-4 z-40 w-[300px] bg-white p-4 rounded-lg shadow-xl border border-gray-200">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="font-bold text-lg text-gray-800">Create Your Route</h3>
-                        <button onClick={toggleRouteCreation} className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-1.5 transition-all duration-200">
+                        <button onClick={toggleRouteCreation} className="text-gray-500 hover:text-gray-700">
                             <X size={20} />
                         </button>
                     </div>
@@ -473,7 +473,7 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
                             <input
                                 type="text"
                                 placeholder="Search tourist location..."
-                                className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all duration-200"
+                                className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </Autocomplete>
                     </div>
@@ -492,7 +492,7 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
                                 </div>
                                 <button
                                     onClick={() => handleRemoveStop(index)}
-                                    className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded p-1 transition-all duration-200"
+                                    className="text-red-400 hover:text-red-600"
                                 >
                                     <X size={14} />
                                 </button>
@@ -506,9 +506,9 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
                     <button
                         onClick={handleVisualizeRoute}
                         disabled={customRouteStops.length < 2}
-                        className={`w-full py-2.5 rounded-lg font-bold text-white transition-all duration-200 ${customRouteStops.length >= 2
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30 hover:scale-[1.02] active:scale-95'
-                                : 'bg-gray-300 cursor-not-allowed opacity-60'
+                        className={`w-full py-2 rounded-md font-bold text-white transition-colors ${customRouteStops.length >= 2
+                            ? 'bg-green-600 hover:bg-green-700'
+                            : 'bg-gray-300 cursor-not-allowed'
                             }`}
                     >
                         Visualize Route
@@ -532,7 +532,7 @@ export default function VietnamMapWindow({ className, style }: VietnamMapWindowP
                     {!isCreatingRoute && (
                         <button
                             onClick={toggleRouteCreation}
-                            className="absolute top-4 left-4 z-10 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2.5 rounded-xl shadow-lg font-bold hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 hover:scale-105 active:scale-95 shadow-blue-500/30"
+                            className="absolute top-4 left-4 z-10 bg-white text-blue-600 px-4 py-2 rounded-lg shadow-lg font-bold hover:bg-blue-50 transition-colors border border-blue-100"
                         >
                             + Create Custom Route
                         </button>

@@ -2,8 +2,8 @@
 
 import React, { useCallback, useState, useMemo } from 'react';
 import { GoogleMap, LoadScript, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
-import { TourRoute } from '../data/routes';
-import { CityInfo, RegionId } from '../data/regions';
+import { TourRoute } from '../constant/routes';
+import { CityInfo, RegionId } from '../constant/regions';
 
 interface GoogleMapComponentProps {
     route?: TourRoute;

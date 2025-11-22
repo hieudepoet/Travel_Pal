@@ -13,108 +13,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
   return (
     // Applied styles from TravelPlanner
     <div className="flex flex-row gap-[20px]">
-      <div className="w-full">
+      <div className="w-[50%]">
         <h2 className="text-[18px] font-bold !text-gray-800 mb-[10px]">Tổng quan</h2>
-        <div className="grid grid-cols-2 gap-[10px] mb-[10px]" >
+        <div className="flex flex-wrap gap-[10px] mb-[10px]" >
           <StatCard
-            icon={<DollarSign className="w-full h-full" style={{ color: "green" }} />}
-            label="Ước tính chi phí"
+            icon={<DollarSign className="w-[20px] h-[20px] mx-[5px]" style={{ color: "green" }} />}
+            label="Chi phí"
             value={`${stats.totalCost.toLocaleString()} ${stats.currency}`}
             backgroundColor="#E8F5E9" // Light Green
           />
           <StatCard
-            icon={<CalendarClock className="w-full h-full" style={{ color: "purple" }} />}
-            label="Thời gian"
-            value={`${stats.durationDays} Days`}
-            backgroundColor="#F3E5F5" // Light Purple
-          />
-          <StatCard
-            icon={<MapPin className="w-full h-full" style={{ color: "red" }} />}
-            label="Số địa điểm"
-            value={stats.totalEvents.toString()}
-            backgroundColor="#FFEBEE" // Light Red
-          />
-          <StatCard
-            icon={<CloudSun className="w-full h-full" style={{ color: "orange" }} />}
-            label="Thời tiết"
-            value={stats.weatherSummary}
-            backgroundColor="#FFF3E0" // Light Orange
-          />
-        </div>
-      </div>
-      <div className="w-full">
-        <h3 className="text-[18px] font-semibold text-gray-500 mb-[10px] tracking-wider">Gợi ý</h3>
-        <div className="p-[5px]" style={{ backgroundColor: "#DBEAFE", borderRadius: "10px" }}>
-          <ul className="" style={{ margin: "8px", padding: "0" }}>
-            {tips.split('. ').map((tip, idx) => (
-              tip && <li key={idx} className="flex items-start gap-[8px] text-sm mb-[8px]" style={{ color: "gray" }}>
-                <span className="inline-block w-[10px] h-[10px] mt-[5px] mr-[5px] flex-shrink-0" style={{ backgroundColor: "#0088FE", borderRadius: "50%" }}></span>
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  backgroundColor: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor }) => (
-  <div className="rounded-lg flex items-center gap-[10px]" style={{ backgroundColor, padding: '12px', borderRadius: '10px' }}>
-    <div className="bg-white p-2 rounded-full shadow-sm">
-      {icon}
-    </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-xs font-medium text-gray-500 uppercase">{label}</p>
-      <p className="text-sm font-bold text-gray-900 truncate" title={value}>{value}</p>
-    </div>
-  </div>
-);
-'use client';
-
-import React from 'react';
-import { TripStats } from '../types/types';
-import { CloudSun, DollarSign, MapPin, CalendarClock } from 'lucide-react';
-
-interface DashboardProps {
-  stats: TripStats;
-  tips: string;
-}
-
-export const Dashboard: React.FC<DashboardProps> = ({ stats, tips }) => {
-  return (
-    // Applied styles from TravelPlanner
-    <div className="flex flex-row gap-[20px]">
-      <div className="w-full">
-        <h2 className="text-[18px] font-bold !text-gray-800 mb-[10px]">Tổng quan</h2>
-        <div className="grid grid-cols-2 gap-[10px] mb-[10px]" >
-          <StatCard
-            icon={<DollarSign className="w-[20px] h-[20px]" style={{ color: "green" }} />}
-            label="Ước tính chi phí"
-            value={`${stats.totalCost.toLocaleString()} ${stats.currency}`}
-            backgroundColor="#E8F5E9" // Light Green
-          />
-          <StatCard
-            icon={<CalendarClock className="w-[20px] h-[20px]" style={{ color: "purple" }} />}
+            icon={<CalendarClock className="w-[20px] h-[20px] mx-[5px]" style={{ color: "purple" }} />}
             label="Thời gian"
             value={`${stats.durationDays} Ngày`}
             backgroundColor="#F3E5F5" // Light Purple
           />
           <StatCard
-            icon={<MapPin className="w-[20px] h-[20px]" style={{ color: "red" }} />}
+            icon={<MapPin className="w-[20px] h-[20px] mx-[5px]" style={{ color: "red" }} />}
             label="Số địa điểm"
             value={stats.totalEvents.toString()}
             backgroundColor="#FFEBEE" // Light Red
           />
           <StatCard
-            icon={<CloudSun className="w-[20px] h-[20px]" style={{ color: "orange" }} />}
+            icon={<CloudSun className="w-[20px] h-[20px] mx-[5px]" style={{ color: "orange" }} />}
             label="Thời tiết"
             value={stats.weatherSummary}
             backgroundColor="#FFF3E0" // Light Orange
@@ -145,14 +66,52 @@ interface StatCardProps {
   backgroundColor: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor }) => (
-  <div className="rounded-lg flex items-center gap-[10px]" style={{ backgroundColor, padding: '12px', borderRadius: '10px' }}>
-    <div className="bg-white p-2 rounded-full shadow-sm">
-      {icon}
+const StatCard: React.FC<StatCardProps> = ({ icon, label, value, backgroundColor }) => {
+  const isWeatherCard = label === "Thời tiết";
+  
+  return (
+    <div 
+      className={`rounded-lg flex gap-3 p-3 ${isWeatherCard ? 'w-full' : 'w-[calc(50%-10px)]'}`} 
+      style={{ 
+        backgroundColor,
+        boxSizing: 'border-box',
+        minHeight: isWeatherCard ? 'auto' : '80px',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div className="bg-white p-2 rounded-full shadow-sm flex-shrink-0">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p 
+          className="text-sm font-semibold uppercase" 
+          style={{
+            margin: 0,
+            lineHeight: '1.2',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+          title={label}
+        >
+          {label}
+        </p>
+        <p 
+          className="text-base font-bold text-gray-900 mt-1"
+          style={{
+            margin: 0,
+            whiteSpace: isWeatherCard ? 'normal' : 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: '1.4',
+            wordBreak: 'break-word'
+          }}
+          title={isWeatherCard ? undefined : value}
+        >
+          {value}
+        </p>
+      </div>
     </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-[14px] uppercase" style={{ fontWeight: "semibold" }}>{label}</p>
-      <p className="text-[16px] font-bold text-gray-900 truncate" title={value}>{value}</p>
-    </div>
-  </div>
-);
+  );
+};

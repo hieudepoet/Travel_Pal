@@ -1,4 +1,4 @@
-import { regionCities, CityInfo } from '../data/regions';
+import { regionCities, CityInfo } from '../constant/regions';
 
 export interface LocationResult {
     name: string;
