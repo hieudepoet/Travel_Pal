@@ -3,8 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { ItineraryEvent } from '../types/types';
-import { MapPin, Wallet, Bus, X, RefreshCw, Phone, Globe, ExternalLink, UtensilsCrossed, Hotel, Camera } from 'lucide-react';
-import { generateGoogleCalendarLink } from '../utils/dateUtils';
+import { MapPin, Wallet, Bus, X, RefreshCw, Phone, Globe, ExternalLink, UtensilsCrossed, Hotel, Camera, Info, DollarSign, Clock } from 'lucide-react';
 
 interface EventCardProps {
   event: ItineraryEvent;
@@ -44,9 +43,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
       : 'border-gray-200 hover:shadow-md'
       }`}>
       <div className="flex gap-3 p-[10px]" style={{ borderRadius: '10px', background: `linear-gradient(to bottom right, ${typeColor.backgroundColor}15, white)`, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', alignItems: "center" }}>
-          <span style={{ ...typeColor, padding: '0.25rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '600', textTransform: 'capitalize', display: 'flex', alignItems: 'center', justifyContent: 'center', width: "50px", height: "50px", marginRight: "20px" }}>
-            <typeColor.icon className="w-4 h-4" />
-          </span>
+        <span style={{ ...typeColor, padding: '0.25rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '600', textTransform: 'capitalize', display: 'flex', alignItems: 'center', justifyContent: 'center', width: "50px", height: "50px", marginRight: "20px" }}>
+          <typeColor.icon className="w-4 h-4" />
+        </span>
 
         {/* Content */}
         <div className="flex flex-col w-full gap-[5px]">
@@ -75,7 +74,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
               <Wallet className="w-[25px] h-[25px] mr-[5px]" style={{ color: '#16A34A' }} />
               {event.costEstimate > 0 ? (
                 <span className="font-semibold text-gray-700" style={{ color: '#16A34A' }}>
-                  {event.costEstimate.toLocaleString()} {event.currency}
+                  {event.costEstimate.toLocaleString()} {event.currency || 'VND'}
                 </span>
               ) : (
                 <span className="text-green-600 font-medium" style={{ color: '#16A34A' }}>Free</span>
@@ -87,8 +86,28 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onReject, onR
             </span>
           </div>
 
+          {/* Notes Section */}
+          {event.notes && (
+            <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100 flex items-start gap-2 mb-3">
+              <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-blue-800">{event.notes}</p>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div className="flex gap-3 text-xs">
+              {event.bookingLink && (
+                <a
+                  href={event.bookingLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-[#FF5B00] font-bold hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLink className="w-[16px] h-[16px]" />
+                  Đặt vé Klook
+                </a>
+              )}
               {event.website && (
                 <a
                   href={event.website}
