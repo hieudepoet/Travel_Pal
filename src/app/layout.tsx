@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -7,6 +7,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Bounce } from 'react-toastify';
 import ChatBox from '@/components/Chat_box';
+import { MapPopupProvider } from '@/contexts/MapPopupContext';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -36,7 +37,9 @@ export default function RootLayout({
           transition={Bounce}
           style={{ zIndex: 9999 }}
         />
-        {children}
+        <MapPopupProvider>
+          {children}
+        </MapPopupProvider>
       </body>
     </html>
   );

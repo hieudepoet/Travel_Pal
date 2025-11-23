@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { LoadScript, Autocomplete } from '@react-google-maps/api';
-import type { CityInfo, RegionDefinition, RegionId } from '../data/regions';
-import { provinces, regionCities, regions, vietnamViewBox } from '../data/regions';
-import { TOUR_ROUTES } from '../data/routes';
+import type { CityInfo, RegionDefinition, RegionId } from '../constant/regions';
+import { provinces, regionCities, regions, vietnamViewBox } from '../constant/regions';
+import { TOUR_ROUTES } from '../constant/routes';
 import RouteVisualization from './RouteVisualization';
 import GoogleMapComponent from './GoogleMapComponent';
 import { LocationResult } from '../utils/locationUtils';
-import { TourRoute } from '../data/routes';
+import { TourRoute } from '../constant/routes';
 import { normalizeProvinceName } from '../utils/provinceMapping';
 
 const LIBRARIES: ("places")[] = ["places"];

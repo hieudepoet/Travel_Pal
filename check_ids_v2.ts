@@ -1,5 +1,5 @@
 
-import { regions, regionCities, provinces } from './src/data/regions';
+import { regions, regionCities, provinces } from './src/constant/regions';
 
 // Access the unexported regionProvinceMap by reconstructing it or inspecting the file?
 // Since I can't import unexported variables, I have to rely on what IS exported.

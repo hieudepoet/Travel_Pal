@@ -1,0 +1,68 @@
+﻿
+> my-app@0.1.0 build
+> next build
+
+node.exe :  ΓÜá Warning: 
+Next.js inferred your 
+workspace root, but it 
+may not be correct.
+At D:\Applications\npm.ps
+1:29 char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  ( ΓÜá Warning: N...n   
+ ot be correct.:Strin    
+g) [], RemoteExcepti    
+on
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+ We detected multiple 
+lockfiles and selected 
+the directory of D:\Code\
+package-lock.json as the 
+root directory.
+ To silence this 
+warning, set 
+`outputFileTracingRoot` 
+in your Next.js config, 
+or consider removing one 
+of the lockfiles if it's 
+not needed.
+   See https://nextjs.org
+/docs/app/api-reference/c
+onfig/next-config-js/outp
+ut#caveats for more 
+information.
+ Detected additional 
+lockfiles: 
+   * D:\Code\GDG_Hackatho
+n\Travel_Pal\package-lock
+.json
+
+   Γû▓ Next.js 15.5.6
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/components/VietnamM
+apWindow.tsx
+Module not found: Can't 
+resolve '../data/regions'
+
+https://nextjs.org/docs/m
+essages/module-not-found
+
+Import trace for 
+requested module:
+./src/app/map/page.tsx
+
+
+> Build failed because 
+of webpack errors

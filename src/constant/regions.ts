@@ -146,7 +146,7 @@ const calculateVietnamViewBox = () => {
   // Since 'provinces' is defined later, we'll do a preliminary pass or move this calculation after 'provinces' definition.
   // However, 'provinces' depends on 'mapData', so we can iterate mapData.locations and filter same as 'provinces'.
 
-  mapData.locations.forEach(location => {
+  mapData.locations.forEach((location: SvgLocation) => {
     if (ignoredProvinces.has(location.id)) return;
 
     const [pMinX, pMinY, pMaxX, pMaxY] = svgPathBounds(location.path);
@@ -182,8 +182,8 @@ export interface ProvinceShape extends SvgLocation {
 }
 
 export const provinces: ProvinceShape[] = mapData.locations
-  .filter((location) => !ignoredProvinces.has(location.id))
-  .map((location) => {
+  .filter((location: SvgLocation) => !ignoredProvinces.has(location.id))
+  .map((location: SvgLocation) => {
     const [minX, minY, maxX, maxY] = svgPathBounds(location.path)
     const centroid: [number, number] = [(minX + maxX) / 2, (minY + maxY) / 2]
     return {

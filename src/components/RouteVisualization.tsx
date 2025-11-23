@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { TourRoute } from '../data/routes';
-import { provinces, vietnamViewBox } from '../data/regions';
+import { TourRoute } from '../constant/routes';
+import { provinces, vietnamViewBox } from '../constant/regions';
 
 interface RouteVisualizationProps {
     route: TourRoute;

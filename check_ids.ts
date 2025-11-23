@@ -1,5 +1,5 @@
 
-import { regions, regionCities, provinces } from './src/data/regions';
+import { regions, regionCities, provinces } from './src/constant/regions';
 
 console.log("Checking for ID mismatches...");
 
